@@ -127,13 +127,13 @@ VAR
 {$ENDIF}
 {$IFDEF DSS_CAPI}
    DSS_CAPI_INFO_SPARSE_COND : Boolean;
+   // Global variables for the OpenDSS Viewer
    DSS_CAPI_EARLY_ABORT : Boolean;
 {$ENDIF}
-   // Global variables for the DSS visualization tool
-   DSS_Viz_installed   :Boolean=False; // DSS visualization tool (flag of existance)
+   DSS_Viz_installed   :Boolean=False; // OpenDSS viewer (flag to mark a local installation)
    DSS_Viz_path: String;
    DSS_Viz_enable: Boolean=False;
-   
+
    IsDLL,
    NoFormsAllowed  :Boolean;
 
@@ -915,7 +915,7 @@ Begin
      ReallocMem(p, newsize);
 End;
 
-// Advance visualization tool check
+// Function to validate the installation and path of the OpenDSS Viewer
 function GetIni(s,k: string; d: string; f: string=''): string; overload;
 var
   ini: TMemIniFile;
@@ -974,17 +974,17 @@ Begin
 End;
 
 {$IFNDEF FPC}
-function CheckDSSVisualizationTool: Boolean;
+// Validates the installation and path of the OpenDSS Viewer
+function CheckOpenDSSViewer: Boolean;
 var FileName: string;
 begin
-  DSS_Viz_path:=GetIni('Application','path','', TPath.GetHomePath+'\OpenDSS Visualization Tool\settings.ini');
+  DSS_Viz_path:=GetIni('Application','path','', TPath.GetHomePath+'\OpenDSS_Viewer\settings.ini');
   // to make it compatible with the function
   FileName  :=  stringreplace(DSS_Viz_path, '\\' ,'\',[rfReplaceAll, rfIgnoreCase]);
   FileName  :=  stringreplace(FileName, '"' ,'',[rfReplaceAll, rfIgnoreCase]);
   // returns true only if the executable exists
   Result:=fileexists(FileName);
 end;
-// End of visualization tool check
 {$ENDIF}
 
 procedure Delay(TickTime : Integer);
@@ -1218,7 +1218,7 @@ initialization
 
    //WriteDLLDebugFile('DSSGlobals');
 {$IFNDEF FPC}
-  DSS_Viz_installed:= CheckDSSVisualizationTool; // DSS visualization tool (flag of existance)
+  DSS_Viz_installed:= CheckOpenDSSViewer; // OpenDSS Viewer (flag for detected installation)
 {$ENDIF}
 {$IFDEF DSS_CAPI}  
    DSS_CAPI_INFO_SPARSE_COND := (GetEnvironmentVariable('DSS_CAPI_INFO_SPARSE_COND') = '1');
