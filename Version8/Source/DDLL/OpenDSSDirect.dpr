@@ -204,7 +204,13 @@ uses
   ConnectOptions in '..\Executive\ConnectOptions.pas',
   Diakoptics in '..\Common\Diakoptics.pas',
   Sparse_Math in '..\Common\Sparse_Math.pas',
-  MeTIS_Exec in '..\Common\MeTIS_Exec.pas';
+  MeTIS_Exec in '..\Common\MeTIS_Exec.pas',
+  GICsource in '..\PCElements\GICsource.pas',
+  AutoTrans in '..\PDElements\AutoTrans.pas',
+  fMonitor in '..\Meters\fMonitor.pas',
+  LD_fm_infos in '..\Meters\LD_fm_infos.pas',
+  VLNodeVars in '..\Meters\VLNodeVars.pas',
+  Generic5OrderMach in '..\PCElements\Generic5OrderMach.pas';
 
 //**************************end of the functions*************************************
 exports
