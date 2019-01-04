@@ -148,7 +148,7 @@ VAR
    Circuits        :TPointerList;
    DSSObjs         :Array of TPointerList;
 
-   AuxParser       :TParser;  // Auxiliary parser for use by anybody for reparsing values
+   AuxParser       :Array of TParser;  // Auxiliary parser for use by anybody for reparsing values
 
 //{****} DebugTrace:TextFile;
 
@@ -1048,6 +1048,7 @@ initialization
    setlength(ErrorStrings,CPU_Cores + 1);
    setlength(ActorHandle,CPU_Cores + 1);
    setlength(Parser,CPU_Cores + 1);
+   setlength(AuxParser,CPU_Cores + 1);
    setlength(ActiveYPrim,CPU_Cores + 1);
    SetLength(SolutionWasAttempted,CPU_Cores + 1);
    SetLength(ActorStatus,CPU_Cores + 1);
@@ -1187,7 +1188,7 @@ initialization
    END;
 {$ENDIF}
 
-   AuxParser        := TParser.Create;
+   AuxParser[ActiveActor]        := TParser.Create;
 
    {$IFDEF Darwin}
       DefaultEditor   := 'open -t';
@@ -1233,7 +1234,6 @@ Finalization
   // Dosimplemsg('Enter DSSGlobals Unit Finalization.');
 //  YBMatrix.Finish_Ymatrix_Critical;   // Ends the critical segment for the YMatrix class
 
-  Auxparser.Free;
 
   EventStrings[ActiveActor].Free;
   SavedFileList[ActiveActor].Free;
@@ -1246,10 +1246,12 @@ Finalization
   DSS_Registry.Free;  {Close Registry}
 {$ENDIF}
 
-// Free all the Actors
-{  for ActiveActor := 1 to NumOfActors do
-  Begin
-    if ActorHandle[Activeactor] <> nil then
+  for ActiveActor := 1 to NumOfActors do
+    if ActorHandle[ActiveActor] <> nil then
+    Begin
+      ActorHandle[ActiveActor].Free;
+      Auxparser[ActiveActor].Free;
+    End;
     Begin
       ActorHandle[Activeactor].Free
     End;
