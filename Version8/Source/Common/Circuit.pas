@@ -607,7 +607,7 @@ BEGIN
      {}
      Reclosers.Free;
      Relays.Free;
-     Fuses.Free;     
+     Fuses.Free;
 
      ControlQueue.Free;
 
@@ -642,7 +642,7 @@ begin
   FOS.fFlags := FOS.fFlags OR FOF_SILENT;
   SHFileOperation(FOS);
 end;
-{$ENDIF}
+  {$ENDIF}
 {$IFDEF UNIX}
 procedure DeltreeDir(Directory: string);
 var 
@@ -860,14 +860,9 @@ Begin
         End;
       end;
       //  Checks the coverage index to stablish if is necessary to keep tracing paths to increase the coverage
-      DBLTemp         :=  0;
+      DBLTemp         :=  0.0;
       for i := Low(Buses_covered) to High(Buses_covered) do
-{$IFDEF FPC}
-        DBLtemp         :=  DBLTemp + Buses_Covered[i];
-{$ELSE}
-        DBLtemp         :=  DBLTemp + double(Buses_Covered[i]);
-{$ENDIF}
-        
+        DBLtemp         :=  DBLTemp + (0.0+Buses_Covered[i]);
       DBLtemp         :=  DBLTemp/Sys_Size;
 {      If the New coverage is different from the previous one and is below the expected coverage keep going
        The first criteria is to avoid keep working on a path that will not contribute to improve the coverage}
@@ -993,7 +988,7 @@ begin
         if Local_temp <> 0 then
         Begin
           text    :=  stringreplace(File_Struc[FS_Idx], 'Redirect ', '',[rfReplaceAll, rfIgnoreCase]);
-          for FS_Idx1 := 2 to NumCkts do
+            for FS_Idx1 := 2 to NumCkts do
             CopyFile(PChar(Path + PathDelim + text), PChar(Path + PathDelim + 'zone_' + inttostr(FS_Idx1) + PathDelim + text), true);
         End;
         inc(FS_Idx);
@@ -1161,7 +1156,7 @@ Begin
       TextCmd  :=  RunMeTIS(DSSDirectory + MeTISCmd + ' ' + FileName + ' ' + inttostr(Num_pieces));  // Executes MeTIS
 {$ELSE}
       Process.RunCommand(DSSDirectory + MeTISCmd, [Filename, inttostr(Num_pieces)], TextCmd); // Executes MeTIS
-{$ENDIF}
+      {$ENDIF}
       Flag      :=  {$IFDEF FPC}ANSIContainsText{$ELSE}ContainsText{$ENDIF}(TextCmd,'I detected an error');
       if Flag then       // The # of edges was wrong, use the one proposed by MeTIS
       Begin
