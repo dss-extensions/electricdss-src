@@ -191,7 +191,7 @@ VAR
    DefaultEditor    :String;     // normally, Notepad
    DefaultFontSize  :Integer;
    DefaultFontName  :String;
-{$IFNDEF FPC}DefaultFontStyles :TFontStyles;{$ENDIF}
+   DefaultFontStyles :{$IFNDEF FPC}TFontStyles{$ELSE}Integer{$ENDIF};
    DSSFileName      :String;     // Name of current exe or DLL
    DSSDirectory     :String;     // where the current exe resides
    StartupDirectory :String;     // Where we started
@@ -241,15 +241,21 @@ VAR
    ActorCPU           : Array of integer;
    ActorStatus        : Array of integer;
    ActorProgressCount : Array of integer;
-   {$IFNDEF FPC}ActorProgress      : Array of TProgress;{$ENDIF}
+   {$IFNDEF FPC}
+   ActorProgress      : Array of TProgress;
+   {$ENDIF}
    ActorPctProgress   : Array of integer;
    ActorHandle        : Array of TSolver;
-   Parallel_enabled   : Boolean;
-   ConcatenateReports : Boolean;
+
+   IsSolveAll,
+   AllActors,
+   ADiakoptics,
+   Parallel_enabled,
+   ConcatenateReports,
    IncMat_Ordered     : Boolean;
    Parser             : Array of TParser;
    ActorMA_Msg        : Array of TEvent;  // Array to handle the events of each actor
-   AllActors          : Boolean;
+
 
 {*******************************************************************************
 *    Nomenclature:                                                             *
@@ -288,7 +294,7 @@ VAR
    FM_Append              : array of Boolean;
 
 //***********************A-Diakoptics Variables*********************************
-  ADiakoptics             : Boolean;
+
 
 
 
@@ -327,9 +333,10 @@ Function MyAllocMem(nbytes:Cardinal):Pointer;
 
 procedure New_Actor_Slot();
 procedure New_Actor(ActorID:  Integer);
-procedure Wait4Actors;
+procedure Wait4Actors(WType : Integer);
 
 procedure Delay(TickTime : Integer);
+
 
 implementation
 
@@ -347,7 +354,7 @@ USES  {Forms,   Controls,}
      resource, versiontypes, versionresource, dynlibs, CmdForms,
        {$IFDEF Linux}
        cpucount,
-       {$ENDIF}
+     {$ENDIF}
      {$ELSE}
      DSSForms, SHFolder,
      ScriptEdit,
@@ -362,6 +369,7 @@ TYPE
 
    TDSSRegister = function(var ClassName: pchar):Integer;  // Returns base class 1 or 2 are defined
    // Users can only define circuit elements at present
+
 VAR
 
    LastUserDLLHandle: THandle;
@@ -393,7 +401,9 @@ Var
   ThePath:Array[0..MAX_PATH] of char;
 Begin
   FillChar(ThePath, SizeOF(ThePath), #0);
+  {$IFDEF MSWINDOWS}
   SHGetFolderPath (0, CSIDL_PERSONAL, 0, 0, ThePath);
+  {$ENDIF}
   Result := ThePath;
 End;
 
@@ -402,7 +412,9 @@ Var
   ThePath:Array[0..MAX_PATH] of char;
 Begin
   FillChar(ThePath, SizeOF(ThePath), #0);
+  {$IFDEF MSWINDOWS}
   SHGetFolderPath (0, CSIDL_LOCAL_APPDATA, 0, 0, ThePath);
+  {$ENDIF}
   Result := ThePath;
 End;
 {$ENDIF}
@@ -467,6 +479,7 @@ Begin
      LastErrorMessage := Msg;
      ErrorNumber := ErrNum;
      AppendGlobalResultCRLF(Msg);
+     SolutionAbort  :=  True;
 End;
 
 //----------------------------------------------------------------------------
@@ -486,19 +499,19 @@ PROCEDURE DoSimpleMsg(Const S:String; ErrNum:Integer);
 VAR
     Retval:Integer;
 Begin
-    IF Not NoFormsAllowed Then Begin
+      IF Not NoFormsAllowed Then Begin
         IF In_Redirect THEN 
         Begin
-            RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
+         RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
             {$IFDEF DSS_CAPI}
             if DSS_CAPI_EARLY_ABORT then
                 Redirect_Abort := True;
             {$ENDIF}
             IF RetVal = -1 THEN 
                 Redirect_Abort := True;
-        End
-        ELSE
-            DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
+       End
+       ELSE
+         DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
     End
     Else
     Begin
@@ -506,11 +519,11 @@ Begin
         if DSS_CAPI_EARLY_ABORT then
             Redirect_Abort := True;
         {$ENDIF}
-    End;
+      End;
 
-    LastErrorMessage := S;
-    ErrorNumber := ErrNum;
-    AppendGlobalResultCRLF(S);
+     LastErrorMessage := S;
+     ErrorNumber := ErrNum;
+     AppendGlobalResultCRLF(S);
 End;
 
 
@@ -694,11 +707,11 @@ FUNCTION GetDSSVersion: String;
  (* time to extract version/release/build numbers from resource information      *)
  (* appended to the binary.                                                      *)
 
- VAR     Stream: TResourceStream;
+VAR     Stream: TResourceStream;
          vr: TVersionResource;
          fi: TVersionFixedInfo;
 
- BEGIN
+BEGIN
    RESULT:= 'Unknown.';
    TRY
 
@@ -723,7 +736,7 @@ FUNCTION GetDSSVersion: String;
      END
    EXCEPT
    END
- End;
+End;
 {$ELSE}
 FUNCTION GetDSSVersion: String;
 var
@@ -763,7 +776,7 @@ Begin
     end;
 
 End;
-{$ENDIF}
+    {$ENDIF}
 {$ENDIF}
 
 
@@ -839,13 +852,13 @@ PROCEDURE ReadDSS_Registry;
 Var  TestDataDirectory:string;
 Begin
   DSS_Registry.Section := 'MainSect';
-  DefaultEditor    := DSS_Registry.ReadString('Editor', 'Notepad.exe' );
-  DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8' ));
-  DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif' );
+     DefaultEditor    := DSS_Registry.ReadString('Editor', 'Notepad.exe' );
+     DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8' ));
+     DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif' );
   {$IFNDEF FPC}
-  DefaultFontStyles := [];
-  If DSS_Registry.ReadBool('ScriptFontBold', TRUE)    Then DefaultFontStyles := DefaultFontStyles + [fsbold];
-  If DSS_Registry.ReadBool('ScriptFontItalic', FALSE) Then DefaultFontStyles := DefaultFontStyles + [fsItalic];
+     DefaultFontStyles := [];
+     If DSS_Registry.ReadBool('ScriptFontBold', TRUE)    Then DefaultFontStyles := DefaultFontStyles + [fsbold];
+     If DSS_Registry.ReadBool('ScriptFontItalic', FALSE) Then DefaultFontStyles := DefaultFontStyles + [fsItalic];
   {$ENDIF}
   DefaultBaseFreq  := StrToInt(DSS_Registry.ReadString('BaseFrequency', '60' ));
   LastFileCompiled := DSS_Registry.ReadString('LastFile', '' );
@@ -947,13 +960,16 @@ begin
 end;
 
 // Waits for all the actors running tasks
-procedure Wait4Actors;
+procedure Wait4Actors(WType : Integer);
 var
   i       : Integer;
   Flag    : Boolean;
 
 Begin
-  for i := 1 to NumOfActors do
+// WType defines the starting point in which the actors will be evaluated,
+// modification introduced in 01-10-2019 to facilitate the coordination
+// between actors when a simulation is performed using A-Diakoptics
+  for i := (WType +1) to NumOfActors do
   Begin
     if ActorStatus[i] = 0 then
     Begin
@@ -987,13 +1003,23 @@ procedure New_Actor(ActorID:  Integer);
 Var
   ScriptEd    : TScriptEdit;
 {$ENDIF}
+{$IFDEF FPC}
 Begin
-  ActorHandle[ActorID] :=  TSolver.Create(false,ActorCPU[ActorID],ActorID,{$IFNDEF DSS_CAPI}ScriptEd.UpdateSummaryForm{$ELSE}nil{$ENDIF},ActorMA_Msg[ActorID]);
-  ActorHandle[ActorID] :=  TSolver.Create(True,ActorCPU[ActorID],ActorID,{$IFNDEF DSS_CAPI}ScriptEd.UpdateSummaryForm{$ELSE}nil{$ENDIF},ActorMA_Msg[ActorID]);
-  ActorHandle[ActorID].Priority :=  tpTimeCritical;
-  ActorHandle[ActorID].Resume;
-  ActorStatus[ActorID] :=  1;
+ ActorHandle[ActorID] :=  TSolver.Create(True,ActorCPU[ActorID],ActorID,nil,ActorMA_Msg[ActorID]); // TEMC: TODO: text-mode callback
+ ActorHandle[ActorID].Priority :=  tpTimeCritical;
+ ActorHandle[ActorID].Resume;  // TEMC: TODO: this reportedly does nothing on Unix and Mac
+ ActorStatus[ActorID] :=  1;
 End;
+{$ELSE}
+var
+ ScriptEd    : TScriptEdit;
+Begin
+ ActorHandle[ActorID] :=  TSolver.Create(True,ActorCPU[ActorID],ActorID,ScriptEd.UpdateSummaryform,ActorMA_Msg[ActorID]);
+ ActorHandle[ActorID].Priority :=  {$IFDEF MSWINDOWS}tpTimeCritical{$ELSE}6{$ENDIF};
+ ActorHandle[ActorID].Resume;
+ ActorStatus[ActorID] :=  1;
+End;
+{$ENDIF}
 
 {$IFNDEF FPC}
 // Validates the installation and path of the OpenDSS Viewer
@@ -1100,7 +1126,7 @@ initialization
    for ActiveActor := 1 to CPU_Cores do
    begin
     ActiveCircuit[ActiveActor]        :=  nil;
-    {$IFNDEF FPC}ActorProgress[ActiveActor]        :=  nil;{$ENDIF}
+    {$IFNDEF FPC}ActorProgress[ActiveActor]        :=  nil; {$ENDIF}
     ActiveDSSClass[ActiveActor]       :=  nil;
     EventStrings[ActiveActor]         := TStringList.Create;
     SavedFileList[ActiveActor]        := TStringList.Create;
@@ -1130,13 +1156,14 @@ initialization
    {$IFDEF FPC}
    ProgramName      := 'OpenDSSCmd';  // for now...
    {$ELSE}
-   ProgramName      := 'OpenDSS';
+   ProgramName      :=    'OpenDSS';
    {$ENDIF}
-   DSSFileName      := GetDSSExeFile;
-   DSSDirectory     := ExtractFilePath(DSSFileName);
+   DSSFileName      :=    GetDSSExeFile;
+   DSSDirectory     :=    ExtractFilePath(DSSFileName);
    ADiakoptics      :=    False;  // Disabled by default
 
    {Various Constants and Switches}
+   {$IFDEF FPC}NoFormsAllowed  := TRUE;{$ENDIF}
 
    CALPHA                := Cmplx(-0.5, -0.866025); // -120 degrees phase shift
    SQRT2                 := Sqrt(2.0);
@@ -1196,11 +1223,11 @@ initialization
 {$ENDIF} 
 
 {$IFNDEF DSS_CAPI}
-   {$IFNDEF FPC}
+{$IFNDEF FPC}
    DSS_Registry     := TIniRegSave.Create('\Software\' + ProgramName);
-   {$ELSE}
-   DSS_Registry     := TIniRegSave.Create(DataDirectory[ActiveActor] + 'opendsscmd.ini');
-   {$ENDIF}
+{$ELSE}
+        DSS_Registry     := TIniRegSave.Create(DataDirectory[ActiveActor] + 'opendsscmd.ini');
+{$ENDIF}
 {$ELSE}
    IF GetEnvironmentVariable('DSS_BASE_FREQUENCY') <> '' THEN
    BEGIN
@@ -1238,9 +1265,9 @@ initialization
    QueryPerformanceFrequency(CPU_Freq);
    {$ENDIF}
 
-//   YBMatrix.Start_Ymatrix_Critical;   // Initializes the critical segment for the YMatrix class
-
+   IsMultithread    :=  True;
    //WriteDLLDebugFile('DSSGlobals');
+
 {$IFNDEF FPC}
   DSS_Viz_installed:= CheckOpenDSSViewer; // OpenDSS Viewer (flag for detected installation)
 {$ENDIF}
@@ -1255,9 +1282,7 @@ Finalization
 //  YBMatrix.Finish_Ymatrix_Critical;   // Ends the critical segment for the YMatrix class
 
 
-  EventStrings[ActiveActor].Free;
-  SavedFileList[ActiveActor].Free;
-  ErrorStrings[ActiveActor].Free;
+
 
   With DSSExecutive Do If RecorderOn Then Recorderon := FALSE;
   ClearAllCircuits;
@@ -1267,16 +1292,16 @@ Finalization
 {$ENDIF}
 
   for ActiveActor := 1 to NumOfActors do
+  Begin
     if ActorHandle[ActiveActor] <> nil then
     Begin
+      EventStrings[ActiveActor].Free;
+      SavedFileList[ActiveActor].Free;
+      ErrorStrings[ActiveActor].Free;
       ActorHandle[ActiveActor].Free;
       Auxparser[ActiveActor].Free;
     End;
-    Begin
-      ActorHandle[Activeactor].Free
-    End;
   End;
-}
 End.
 
 

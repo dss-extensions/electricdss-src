@@ -3103,6 +3103,7 @@ Begin
     begin
       Writeln(F,inttostr(IncMat.data[i][0]) + ',' + inttostr(IncMat.data[i][1]) + ',' + inttostr(IncMat.data[i][2]));
     end;
+    GlobalResult := FileNm;
     CloseFile(F);
   End;
 End;
@@ -3121,6 +3122,7 @@ Begin
     begin
       Writeln(F,Inc_Mat_Rows[i]);
     end;
+    GlobalResult := FileNm;
     CloseFile(F);
   End;
 End;
@@ -3139,6 +3141,7 @@ Begin
     begin
       Writeln(F,Inc_Mat_Cols[i]);
     end;
+    GlobalResult := FileNm;
     CloseFile(F);
   End;
 End;
@@ -3158,6 +3161,7 @@ Begin
     begin
       Writeln(F,Inc_Mat_Cols[i] + ',' + inttostr(Inc_Mat_levels[i]));
     end;
+    GlobalResult := FileNm;
     CloseFile(F);
   End;
 End;
@@ -3176,6 +3180,7 @@ Begin
     begin
       Writeln(F,inttostr(Laplacian.data[i][0]) + ',' + inttostr(Laplacian.data[i][1]) + ',' + inttostr(Laplacian.data[i][2]));
     end;
+    GlobalResult := FileNm;
     CloseFile(F);
   End;
 End;
@@ -3196,6 +3201,7 @@ Begin
       begin
         Writeln(F,inttostr(ZLL.CData[i].Row) + ',' + inttostr(ZLL.CData[i].Col) + ',' + floattostr(ZLL.CData[i].Value.Re)+ ',' + floattostr(ZLL.CData[i].Value.Im));
       end;
+      GlobalResult := FileNm;
       CloseFile(F);
     End;
   End;
@@ -3217,6 +3223,7 @@ Begin
       begin
         Writeln(F,inttostr(ZCC.CData[i].Row) + ',' + inttostr(ZCC.CData[i].Col) + ',' + floattostr(ZCC.CData[i].Value.Re)+ ',' + floattostr(ZCC.CData[i].Value.Im));
       end;
+      GlobalResult := FileNm;
       CloseFile(F);
     End;
   End;
@@ -3238,6 +3245,7 @@ Begin
       begin
         Writeln(F,inttostr(Y4.CData[i].Row) + ',' + inttostr(Y4.CData[i].Col) + ',' + floattostr(Y4.CData[i].Value.Re)+ ',' + floattostr(Y4.CData[i].Value.Im));
       end;
+      GlobalResult := FileNm;
       CloseFile(F);
     End;
   End;
@@ -3259,6 +3267,7 @@ Begin
       begin
         Writeln(F,inttostr(Contours.CData[i].Row) + ',' + inttostr(Contours.CData[i].Col) + ',' + floattostr(Contours.CData[i].Value.Re));
       end;
+      GlobalResult := FileNm;
       CloseFile(F);
     End;
   End;
