@@ -55,7 +55,9 @@ Uses Classes, DSSClassDefs, DSSObject, DSSClass, ParserDel, Hashlist, PointerLis
      Types,
      SyncObjs,
      YMatrix,
-     fMonitor;       // by Dahei
+     fMonitor,     // by Dahei
+     VSource
+;
 
 
 CONST
@@ -225,6 +227,7 @@ VAR
    PVSystemClass      :Array of TPVSystem;
    InvControlClass    :Array of TInvControl;
    ExpControlClass    :Array of TExpControl;
+   ActiveVSource      :Array of TVsource;   // created on 01/14/2019 to facilitate actors to modify VSources while simulating
 
    EventStrings       :Array of TStringList;
    SavedFileList      :Array of TStringList;
@@ -1099,6 +1102,7 @@ initialization
    SetLength(SolutionWasAttempted,CPU_Cores + 1);
    SetLength(ActorStatus,CPU_Cores + 1);
    SetLength(ActorMA_Msg,CPU_Cores + 1);
+   SetLength(ActiveVSource,CPU_Cores + 1);
 
    setlength(FMonitorClass,CPU_Cores + 1);    // by Dahei UCF
    // Init pointer repositories for the EnergyMeter in multiple cores
@@ -1146,6 +1150,8 @@ initialization
     PHV_MHandle[ActiveActor]          :=  nil;
     FM_MHandle[ActiveActor]           :=  nil;
     DIFilesAreOpen[ActiveActor]       :=  FALSE;
+
+    ActiveVSource[Activeactor]        :=  nil;
    end;
 
    Allactors              :=  False;
