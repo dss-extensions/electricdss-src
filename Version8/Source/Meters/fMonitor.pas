@@ -1173,7 +1173,7 @@ begin
                begin
                     if pElem.ActiveTerminal.BusRef =  Bus_Idx then
                     begin
-                      if ContainsText(lowercase(pElem.DSSClassName),'generic5') then
+                      if {$IFDEF FPC}ANSIContainsText{$ELSE}ContainsText{$ENDIF}(lowercase(pElem.DSSClassName),'generic5') then
                        begin
 
                                   //vl_nodeType should be define per phase
@@ -1227,7 +1227,7 @@ begin
                        ldIdx2 :=  -1;
                        ldIdx3 :=  -1;
 
-                       if ContainsText(lowercase(pElem.DSSClassName),'load') then
+                       if {$IFDEF FPC}ANSIContainsText{$ELSE}ContainsText{$ENDIF}(lowercase(pElem.DSSClassName),'load') then
                        begin
 
                             num := pElem.NPhases;

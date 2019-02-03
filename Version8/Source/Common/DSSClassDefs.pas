@@ -64,6 +64,8 @@ CONST
       VCCS_ELEMENT     = 33 * 8;
       ESPVL_CONTROL     = 34 * 8;
       INDMACH012_ELEMENT = 35 * 8;
+      GIC_SOURCE         = 36 * 8;
+      AUTOTRANS_ELEMENT  = 37 * 8;
       FMON_ELEMENT = 38*8;                        {BY Dahei UCF}
       Generic5OrderMach_ELEMENT = 39 * 8;         {BY Dahei UCF}
 
@@ -152,7 +154,6 @@ Begin
 
      Classnames[ActiveActor]      := THashList.Create(25);   // Makes 5 sub lists
      DSSClassList[ActiveActor]    := TPointerList.Create(10);  // 10 is initial size and increment
-     DSSClasses                   := TDSSClasses.Create;  // class to handle junk for defining DSS classes
      if not Assigned(DSSClasses) then
         DSSClasses                   := TDSSClasses.Create;  // class to handle junk for defining DSS classes
      

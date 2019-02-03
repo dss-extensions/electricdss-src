@@ -1749,10 +1749,9 @@ begin
   FOS.fFlags := FOS.fFlags OR FOF_NOCONFIRMATION;
   // Add the next line for a "silent operation" (no progress box)
   FOS.fFlags := FOS.fFlags OR FOF_SILENT;
-  {$IFDEF MSWINDOWS}
   SHFileOperation(FOS);
 end;
-  {$ENDIF}
+{$ENDIF}
 {$IFDEF UNIX}
 procedure DeltreeDir(Directory: string);
 var 
@@ -2244,7 +2243,7 @@ END;
 PROCEDURE TSolutionObj.ZeroAuxCurrents(ActorID: Integer);
 VAR i:Integer;
 BEGIN
-//    FOR i := 1 to ActiveCircuit[ActorID].NumNodes Do AuxCurrents^[i] := CZERO;
+    FOR i := 1 to ActiveCircuit[ActiveActor].NumNodes Do AuxCurrents^[i] := CZERO;
 END;
 
 PROCEDURE TSolutionObj.Check_Fault_Status(ActorID : Integer);
@@ -2749,6 +2748,7 @@ var
                     Else
                         DosimpleMsg('Unknown solution mode.', 481);
                     End;
+                  end;
                 {$IFDEF MSWINDOWS}
                   QueryPerformanceCounter(GEndTime);
                 {$ENDIF}
@@ -2763,6 +2763,7 @@ var
 
                   // Sends a message to Actor Object (UI) to notify that the actor has finised
                   UIEvent.SetEvent;
+                  {$IFDEF MSWINDOWS}
                   if Not ADiakoptics then
                   Begin
                     if Parallel_enabled then
@@ -2773,6 +2774,7 @@ var
                     if (Parallel_enabled and (ActorID = 1)) then
                       if Not IsDLL then queue(CallCallBack); // Refreshes the GUI if running asynchronously
                   End;
+                  {$ENDIF}
                 End;
               Except
                 On E:Exception Do

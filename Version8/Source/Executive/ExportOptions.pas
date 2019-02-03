@@ -25,6 +25,12 @@ implementation
 
 Uses ExportResults, Monitor, EnergyMeter, ParserDel, sysutils, DSSGlobals, ExportCIMXML, Utilities;
 
+function AssignNewGUID (val: String): TGuid;
+begin
+  if Pos ('{', val) < 1 then
+    val := '{' + val + '}';
+  result := StringToGuid (val);
+end;
 
 Procedure DefineOptions;
 
@@ -115,7 +121,8 @@ Begin
       ExportHelp[18] := '(Default file = EXP_SEQZ.CSV) Equivalent sequence Z1, Z0 to each bus.';
       ExportHelp[19] := '(Default file = EXP_P_BYPHASE.CSV) [MVA] [Filename] Power by phase. Default is kVA.';
       ExportHelp[20] := '(Default file = CIM17x.XML) (IEC 61968-13, CIM v17 extended, CDPSM Combined (unbalanced load flow) profile)' + CRLF
-                      + ' [Substation=subname SubGeographicRegion=subgeoname GeographicRegion=geoname File=filename]';
+                      + ' [File=filename fid=_guidstring Substation=subname sid=_guidstring' + CRLF
+                      + ' SubGeographicRegion=subgeoname sgrid=_guidstring GeographicRegion=geoname rgnid=_guidstring]';
       ExportHelp[21] := '** Deprecated ** (IEC 61968-13, CDPSM Functional profile)';
       ExportHelp[22] := '** Deprecated ** (IEC 61968-13, CDPSM Asset profile)';
       ExportHelp[23] := '[Default file = EXP_BUSCOORDS.CSV] Bus coordinates in csv form.';
@@ -182,12 +189,12 @@ VAR
    PhasesToPlot         :Integer;
    AbortExport          :Boolean;
    Substation, GeographicRegion, SubGeographicRegion: String; // for CIM export
+   FdrGuid, SubGuid, SubGeoGuid, RgnGuid: TGuid;              // for CIM export
    InitP, FinalP, idxP  : Integer; // Variables created for concatenating options
 
 Begin
    Result := 0;
    AbortExport := FALSE;
-   FileName := '';
 
    ParamName := Parser[ActiveActor].NextParam;
    Parm1 := LowerCase(Parser[ActiveActor].StrValue);
@@ -219,6 +226,10 @@ Begin
    Substation := ActiveCircuit[ActiveActor].Name + '_Substation';
    SubGeographicRegion := ActiveCircuit[ActiveActor].Name + '_SubRegion';
    GeographicRegion := ActiveCircuit[ActiveActor].Name + '_Region';
+   FdrGuid := ActiveCircuit[ActiveActor].GUID;  // default is to not change the feeder mrid 
+   CreateGuid (SubGuid);      // these next 3 are created on the fly for CIM export
+   CreateGuid (SubGeoGuid); 
+   CreateGuid (RgnGuid);
 
    CASE ParamPointer OF
       9, 19: Begin { Trap export powers command and look for MVA/kVA option }
@@ -257,8 +268,16 @@ Begin
                 SubGeographicRegion := Parm2
               else if CompareTextShortest(ParamName, 'g')=0 then
                 GeographicRegion := Parm2
-              else if CompareTextShortest(ParamName, 'f')=0 then
-                FileName := Parm2;
+              else if CompareTextShortest(ParamName, 'fil')=0 then
+                FileName := Parm2
+              else if CompareTextShortest(ParamName, 'fid')=0 then
+                FdrGuid := AssignNewGUID (Parm2)
+              else if CompareTextShortest(ParamName, 'sid')=0 then
+                SubGuid := AssignNewGUID (Parm2)
+              else if CompareTextShortest(ParamName, 'sg')=0 then
+                SubGeoGuid := AssignNewGUID (Parm2)
+              else if CompareTextShortest(ParamName, 'rg')=0 then
+                RgnGuid := AssignNewGUID (Parm2);
               ParamName := LowerCase (parser[ActiveActor].nextParam);
               Parm2 := Parser[ActiveActor].strValue;
             end;
@@ -422,7 +441,7 @@ Begin
      17: ExportY(Filename, TripletOpt);
      18: ExportSeqZ(Filename);
      19: ExportPbyphase(Filename, MVAOpt);
-     20: ExportCDPSM (Filename, Substation, SubGeographicRegion, GeographicRegion, Combined);
+     20: ExportCDPSM (Filename, Substation, SubGeographicRegion, GeographicRegion, FdrGuid, SubGuid, SubGeoGuid, RgnGuid, Combined);
      21: DoSimpleMsg ('Functional export no longer supported; use Combined', 252);
      22: DoSimpleMsg ('Asset export no longer supported; use Combined', 252);
      23: ExportBusCoords(Filename);

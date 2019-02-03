@@ -71,7 +71,7 @@ Procedure ExportC(FileNm:String);
 
 IMPLEMENTATION
 
-Uses uComplex,  Arraydef, sysutils,   Circuit, DSSClassDefs, DSSGlobals,
+Uses uComplex,  Arraydef, Sysutils,   Circuit, DSSClassDefs, DSSGlobals,
      uCMatrix,  solution, CktElement, Utilities, Bus, MathUtil, DSSClass,
      PDElement, PCElement, Generator,  Sensor, Load, RegControl, Transformer,
      ParserDel, Math, Ymatrix, LineGeometry, WireData, LineCode, XfmrCode, NamedObject,
@@ -2639,10 +2639,8 @@ Begin
        SetLength (RowIdx, nNZ);
        SetLength (cVals, nNZ);
        GetCompressedMatrix (hY, nBus + 1, nNZ, @ColPtr[0], @RowIdx[0], @cVals[0]);
-
        {Write out fully qualified Bus Names}
         With ActiveCircuit[ActiveActor] Do Begin
-
           Writeln(F, Format('%d, ',[NumNodes]));
   (*        For i := 1 to NumNodes DO BEGIN
              j :=  MapNodeToBus^[i].BusRef;
@@ -2668,20 +2666,13 @@ Begin
              End;
              Writeln(F);
           End;
-
         End;
      end;    
 
-
      GlobalResult := FileNm;
-
   Finally
-
      CloseFile(F);
-
   End;
-
-
 End;
 
 Procedure ExportSeqZ(FileNm:String);
@@ -3712,8 +3703,7 @@ Begin
 
    If Assigned(pMeter) Then
      // If a meter is specified, export that meter only
-     With pMeter Do
-     Begin
+     With pMeter Do Begin
          for i  := 1 to SectionCount  do
            With FeederSections^[i] Do Begin
               ActiveCircuit[ActiveActor].ActiveCktElement := TDSSCktElement(sequenceList.Get(SeqIndex));
@@ -3724,13 +3714,10 @@ Begin
      End
    Else    // export sections for all meters
      Begin
-
         iMeter := EnergyMeterClass[ActiveActor].First;
-        while iMeter>0 do
-          Begin
+        while iMeter>0 do Begin
              MyMeterPtr:=EnergyMeterClass[ActiveActor].GetActiveObj;
-             With MyMeterPtr Do
-             Begin
+             With MyMeterPtr Do Begin
                  for i  := 1 to SectionCount  do
                  With FeederSections^[i] Do Begin
                     ActiveCircuit[ActiveActor].ActiveCktElement := TDSSCktElement(sequenceList.Get(SeqIndex));
@@ -3738,10 +3725,9 @@ Begin
                     [Name, i, SeqIndex, GetOCPDeviceTypeString(OCPDeviceType), NCustomers, NBranches, AverageRepairTime, TotalCustomers, SectFaultRate, SumFltRatesXRepairHrs, SumBranchFltRates,
                      FullName(ActiveCircuit[ActiveActor].ActiveCktElement)  ]));
                  End;
+                iMeter := EnergyMeterClass[ActiveActor].Next;
              End;
-             iMeter := EnergyMeterClass[ActiveActor].Next;
           End;
-
      End;
 
      GlobalResult := FileNm;

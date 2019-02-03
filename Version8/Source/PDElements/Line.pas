@@ -946,7 +946,8 @@ Begin
 
 
     // Build Series YPrim
-    WITH YPrim_Series DO Begin
+    WITH YPrim_Series DO
+    Begin
 
          {Build Zmatrix}
          If GeometrySpecified Then
@@ -989,7 +990,7 @@ Begin
       {At this point have Z and Zinv in proper values including length}
       {If GIC simulation, convert Zinv back to sym components, R Only }
 
-         if ActiveCircuit[ActorID].Solution.Frequency < 0.51 then     // 0.5 Hz is cutoff
+         if ActiveCircuit[actorID].Solution.Frequency < 0.51 then     // 0.5 Hz is cutoff
              ConvertZinvToPosSeqR;
 
 
@@ -1028,6 +1029,7 @@ Begin
      With Yprim_Series Do For i := 1 to Yorder Do AddElement(i,i, CAP_EPSILON);
 
      // Now Build the Shunt admittances and add into YPrim
+     if ActiveCircuit[ActorID].Solution.Frequency > 0.51 then   // Skip Capacitance for GIC
      WITH YPrim_Shunt Do  Begin
 
          {Put half the Shunt Capacitive Admittance at each end}

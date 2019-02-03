@@ -2416,7 +2416,8 @@ begin
     // Backward sweep calculating failure rates
        For idx := SequenceList.ListSize downto 1 Do
            Begin
-               With TPDElement(SequenceList.Get(idx)) do Begin
+               With TPDElement(SequenceList.Get(idx)) do
+               Begin
                    CalcFltRate;    // Calc failure rate for this element
                    AccumFltRate;
                End;
@@ -2446,7 +2447,7 @@ begin
        // Now have number of sections  so allocate FeederSections array
        Reallocmem(FeederSections, Sizeof(FeederSections^[1])*SectionCount);
        for idx := 1 to SectionCount do
-            With FeederSections^[idx] Do      // Initialize all Section data
+            With FeederSections^[idx] Do
             Begin
                 OCPDeviceType         := 0;    // 1=Fuse; 2=Recloser; 3=Relay
                 AverageRepairTime     := 0.0;
