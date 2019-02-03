@@ -10,13 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ComCtrls, Menus, ToolWin, ImgList,ScriptEdit, ExtCtrls
-  {$IFNDEF Linux}
-  ,PsAPI
-  {$ENDIF}
-  {$IFDEF VER330}    // Rio
-  ,System.ImageList
-  {$ENDIF}
+  StdCtrls, ComCtrls, Menus, ToolWin, ImgList, ScriptEdit, ExtCtrls, PsAPI
   {$IFDEF VER320}    // Tokyo
   ,System.ImageList
   {$ENDIF}
@@ -1028,9 +1022,8 @@ begin
 
 // If a command line file name give, attempt to execute the script
   If CmdLineFileFound Then Begin
-    DSSExecutive.Command := 'compile ' + Enclosequotes(CmdLineFileName);
- //   ActiveScriptForm.Editor.SelectAll;
- //   ToolButton2Click(nil);   // Execute all the commands in the window
+    ActiveScriptForm.Editor.SelectAll;
+    ToolButton2Click(nil);   // Execute all the commands in the window
   End;
 
 
