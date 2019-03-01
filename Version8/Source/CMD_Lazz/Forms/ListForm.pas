@@ -12,29 +12,36 @@ unit ListForm;
 interface
 
 uses
-  LCLIntf, LCLType, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls;
+    LCLIntf,
+    LCLType,
+    SysUtils,
+    Classes,
+    Graphics,
+    Controls,
+    Forms,
+    Dialogs,
+    StdCtrls;
 
 type
-  TListBoxForm = class(TForm)
-    OKBtn: TButton;
-    CancelBtn: TButton;
-    ComboBox1: TComboBox;
-    procedure FormCreate(Sender: TObject);
-    procedure OKBtnClick(Sender: TObject);
-    procedure CancelBtnClick(Sender: TObject);
-    procedure ListBox1DblClick(Sender: TObject);
-  private
+    TListBoxForm = class(TForm)
+        OKBtn: TButton;
+        CancelBtn: TButton;
+        ComboBox1: TComboBox;
+        procedure FormCreate(Sender: TObject);
+        procedure OKBtnClick(Sender: TObject);
+        procedure CancelBtnClick(Sender: TObject);
+        procedure ListBox1DblClick(Sender: TObject);
+    PRIVATE
     { Private declarations }
-  public
+    PUBLIC
     { Public declarations }
-    CancelPressed:Boolean;
-    SelectedValue:String;
-    SelectedIndex:Integer;
-  end;
+        CancelPressed: Boolean;
+        SelectedValue: String;
+        SelectedIndex: Integer;
+    end;
 
 var
-  ListBoxForm: TListBoxForm;
+    ListBoxForm: TListBoxForm;
 
 implementation
 
@@ -42,15 +49,15 @@ implementation
 
 procedure TListBoxForm.FormCreate(Sender: TObject);
 begin
-     CancelPressed := FALSE;
+    CancelPressed := FALSE;
 end;
 
 procedure TListBoxForm.OKBtnClick(Sender: TObject);
 begin
-     CancelPressed := FALSE;
-     SelectedIndex := ComboBox1.ItemIndex;
-     SelectedValue := ComboBox1.Items.Strings[SelectedIndex];
-     Close;
+    CancelPressed := FALSE;
+    SelectedIndex := ComboBox1.ItemIndex;
+    SelectedValue := ComboBox1.Items.Strings[SelectedIndex];
+    Close;
 end;
 
 procedure TListBoxForm.CancelBtnClick(Sender: TObject);
@@ -61,7 +68,7 @@ end;
 
 procedure TListBoxForm.ListBox1DblClick(Sender: TObject);
 begin
-     OKBtnClick(Sender);
+    OKBtnClick(Sender);
 end;
 
 end.

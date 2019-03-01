@@ -1,4 +1,5 @@
 unit IniRegSave;
+
 {
   ----------------------------------------------------------
   Copyright (c) 2008-2015, Electric Power Research Institute, Inc.
@@ -20,95 +21,93 @@ unit IniRegSave;
 interface
 
 uses
-  Registry;
+    Registry;
 
 type
 
-  TIniRegSave = class(TObject)
-    FSection : String;
-    Fname   : String;
-    FIniFile: TRegIniFile;
+    TIniRegSave = class(TObject)
+        FSection: String;
+        Fname: String;
+        FIniFile: TRegIniFile;
 
-  private
-    procedure Set_FSection(const Value: String);
+    PRIVATE
+        procedure Set_FSection(const Value: String);
     { Private declarations }
 
-  public
+    PUBLIC
     { Public declarations }
 
-    Property Section:String Read FSection Write Set_FSection;
+        property Section: String READ FSection WRITE Set_FSection;
 
-    Procedure ClearSection;
+        procedure ClearSection;
 
-    Procedure WriteBool(const key:string; value:Boolean);
-    Procedure WriteInteger(const key:string; value:Integer);
-    Procedure WriteString(const key:string; value:String);
+        procedure WriteBool(const key: String; value: Boolean);
+        procedure WriteInteger(const key: String; value: Integer);
+        procedure WriteString(const key: String; value: String);
 
-    Function  ReadBool(const key:string; default:boolean):Boolean;
-    Function  ReadInteger(const key:string; default:Integer):Integer;
-    Function  ReadString(const key:string; const default:string):String;
+        function ReadBool(const key: String; default: Boolean): Boolean;
+        function ReadInteger(const key: String; default: Integer): Integer;
+        function ReadString(const key: String; const default: String): String;
 
-    constructor Create(Const Name:String);
-    destructor Destroy; override;
-  end;
+        constructor Create(const Name: String);
+        destructor Destroy; OVERRIDE;
+    end;
 
 
 implementation
 
 
-
-
 constructor TIniRegSave.Create(const Name: String);
 begin
-     FName := Name;
-     FIniFile := TRegIniFile.Create(Name);
-     FSection := 'MainSect';
+    FName := Name;
+    FIniFile := TRegIniFile.Create(Name);
+    FSection := 'MainSect';
 end;
 
 destructor TIniRegSave.Destroy;
 begin
-  inherited;
+    inherited;
 
 end;
 
-function TIniRegSave.ReadBool(const key: string; default:Boolean): Boolean;
+function TIniRegSave.ReadBool(const key: String; default: Boolean): Boolean;
 begin
-     Result := FiniFile.ReadBool(Fsection, key, default);
+    Result := FiniFile.ReadBool(Fsection, key, default);
 end;
 
-function TIniRegSave.ReadInteger(const key: string; Default:Integer): Integer;
+function TIniRegSave.ReadInteger(const key: String; Default: Integer): Integer;
 begin
-     Result := FiniFile.ReadInteger(Fsection, key, default);
+    Result := FiniFile.ReadInteger(Fsection, key, default);
 end;
 
-function TIniRegSave.ReadString(const key: string; const Default:String): String;
+function TIniRegSave.ReadString(const key: String; const Default: String): String;
 begin
-     Result := FiniFile.ReadString(Fsection, key, default);
+    Result := FiniFile.ReadString(Fsection, key, default);
 end;
 
 procedure TIniRegSave.Set_FSection(const Value: String);
 begin
-  FSection := Value;
+    FSection := Value;
 end;
 
-procedure TIniRegSave.WriteBool(const key: string; value: Boolean);
+procedure TIniRegSave.WriteBool(const key: String; value: Boolean);
 begin
-     FiniFile.WriteBool (FSection, key, value);
+    FiniFile.WriteBool(FSection, key, value);
 end;
 
-procedure TIniRegSave.WriteInteger(const key: string; value: Integer);
+procedure TIniRegSave.WriteInteger(const key: String; value: Integer);
 begin
-      FiniFile.WriteInteger (FSection, key, value);
+    FiniFile.WriteInteger(FSection, key, value);
 end;
 
-procedure TIniRegSave.WriteString(const key: string; value: String);
+procedure TIniRegSave.WriteString(const key: String; value: String);
 begin
-    FiniFile.WriteString (FSection, key, value);
+    FiniFile.WriteString(FSection, key, value);
 end;
 
 procedure TIniRegSave.ClearSection;
 begin
-  FiniFile.EraseSection(FSection);
+    FiniFile.EraseSection(FSection);
 end;
 
 end.

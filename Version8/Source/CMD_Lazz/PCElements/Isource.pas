@@ -25,474 +25,529 @@ unit Isource;
 
 interface
 
-USES DSSClass, PCClass,PCElement, ucmatrix, ucomplex, Spectrum;
+uses
+    DSSClass,
+    PCClass,
+    PCElement,
+    ucmatrix,
+    ucomplex,
+    Spectrum;
 
-TYPE
+type
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-   TIsource = CLASS(TPCClass)
-     private
-     Protected
-       Procedure DefineProperties;
-       Function MakeLike(Const OtherSource:STring):Integer;Override;
-     public
-       constructor Create;
-       destructor Destroy; override;
+    TIsource = class(TPCClass)
+    PRIVATE
+    PROTECTED
+        procedure DefineProperties;
+        function MakeLike(const OtherSource: String): Integer; OVERRIDE;
+    PUBLIC
+        constructor Create;
+        destructor Destroy; OVERRIDE;
 
-       Function Edit:Integer; override;
-       Function Init(Handle:Integer):Integer; override;
-       Function NewObject(const ObjName:String):Integer; override;
-   End;
+        function Edit: Integer; OVERRIDE;
+        function Init(Handle: Integer): Integer; OVERRIDE;
+        function NewObject(const ObjName: String): Integer; OVERRIDE;
+    end;
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-   TIsourceObj = class(TPCElement)
-     private
+    TIsourceObj = class(TPCElement)
+    PRIVATE
 
-        FphaseShift  :Double;
+        FphaseShift: Double;
 
-        Function GetBaseCurr:Complex;
+        function GetBaseCurr: Complex;
 
-      public
+    PUBLIC
 
-        Amps:Double;
-        Angle:Double;
-        SrcFrequency:Double;
+        Amps: Double;
+        Angle: Double;
+        SrcFrequency: Double;
         ScanType,
-        SequenceType :Integer;
+        SequenceType: Integer;
 
-        constructor Create(ParClass:TDSSClass; const SourceName:String);
-        destructor  Destroy; override;
+        constructor Create(ParClass: TDSSClass; const SourceName: String);
+        destructor Destroy; OVERRIDE;
 
-        Procedure RecalcElementData; Override;
-        Procedure CalcYPrim; Override;
+        procedure RecalcElementData; OVERRIDE;
+        procedure CalcYPrim; OVERRIDE;
 
-        PROCEDURE MakePosSequence;Override;  // Make a positive Sequence Model
+        procedure MakePosSequence; OVERRIDE;  // Make a positive Sequence Model
 
-        Function  InjCurrents:Integer; Override;
-        Procedure GetInjCurrents(Curr:pComplexArray); Override;
-        Procedure GetCurrents(Curr: pComplexArray);Override;
+        function InjCurrents: Integer; OVERRIDE;
+        procedure GetInjCurrents(Curr: pComplexArray); OVERRIDE;
+        procedure GetCurrents(Curr: pComplexArray); OVERRIDE;
 
-        PROCEDURE InitPropertyValues(ArrayOffset:Integer);Override;
-        Procedure DumpProperties(Var F:TextFile; Complete:Boolean); Override;
+        procedure InitPropertyValues(ArrayOffset: Integer); OVERRIDE;
+        procedure DumpProperties(var F: TextFile; Complete: Boolean); OVERRIDE;
 
-   End;
+    end;
 
-VAR
-    ActiveIsourceObj:TIsourceObj;
-    IsourceClass:TISource;
+var
+    ActiveIsourceObj: TIsourceObj;
+    IsourceClass: TISource;
 
 // = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 implementation
 
 
-USES  ParserDel, Circuit, DSSClassDefs, DSSGlobals, Utilities, Sysutils, Command;
+uses
+    ParserDel,
+    Circuit,
+    DSSClassDefs,
+    DSSGlobals,
+    Utilities,
+    Sysutils,
+    Command;
 
-Var  NumPropsThisClass:Integer;
+var
+    NumPropsThisClass: Integer;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 constructor TIsource.Create;  // Creates superstructure for all Line objects
-Begin
-     Inherited Create;
-     Class_Name := 'Isource';
-     DSSClassType := SOURCE + NON_PCPD_ELEM;  // Don't want this in PC Element List
+begin
+    inherited Create;
+    Class_Name := 'Isource';
+    DSSClassType := SOURCE + NON_PCPD_ELEM;  // Don't want this in PC Element List
 
-     ActiveElement := 0;
+    ActiveElement := 0;
 
-     DefineProperties;
+    DefineProperties;
 
-     CommandList := TCommandList.Create(Slice(PropertyName^, NumProperties));
-     CommandList.Abbrev := TRUE;
+    CommandList := TCommandList.Create(Slice(PropertyName^, NumProperties));
+    CommandList.Abbrev := TRUE;
 
-     IsourceClass := Self;
-End;
+    IsourceClass := Self;
+end;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Destructor TIsource.Destroy;
+destructor TIsource.Destroy;
 
-Begin
+begin
     // ElementList and  CommandList freed in inherited destroy
-    Inherited Destroy;
+    inherited Destroy;
 
-End;
+end;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Procedure TIsource.DefineProperties;
-Begin
-     NumPropsThisClass := 7;
+procedure TIsource.DefineProperties;
+begin
+    NumPropsThisClass := 7;
 
-     Numproperties := NumPropsThisClass;
-     CountProperties;   // Get inherited property count
-     AllocatePropertyArrays;
+    Numproperties := NumPropsThisClass;
+    CountProperties;   // Get inherited property count
+    AllocatePropertyArrays;
 
 
      // Define Property names
-     PropertyName[1] := 'bus1';
-     PropertyName[2] := 'amps';
-     PropertyName[3] := 'angle';
-     PropertyName[4] := 'frequency';
-     PropertyName[5] := 'phases';
-     PropertyName[6] := 'scantype';
-     PropertyName[7] := 'sequence';
+    PropertyName[1] := 'bus1';
+    PropertyName[2] := 'amps';
+    PropertyName[3] := 'angle';
+    PropertyName[4] := 'frequency';
+    PropertyName[5] := 'phases';
+    PropertyName[6] := 'scantype';
+    PropertyName[7] := 'sequence';
 
      // define Property help values
-     PropertyHelp[1] := 'Name of bus to which source is connected.'+CRLF+'bus1=busname'+CRLF+'bus1=busname.1.2.3';
-     PropertyHelp[2] := 'Magnitude of current source, each phase, in Amps.';
-     PropertyHelp[3] := 'Phase angle in degrees of first phase: e.g.,Angle=10.3.'+CRLF+
-                        'Phase shift between phases is assumed 120 degrees when '+
-                        'number of phases <= 3';
-     PropertyHelp[4] := 'Source frequency.  Defaults to  circuit fundamental frequency.';
-     PropertyHelp[5] := 'Number of phases.  Defaults to 3. For 3 or less, phase shift is 120 degrees.';
-     PropertyHelp[6] := '{pos*| zero | none} Maintain specified sequence for harmonic solution. Default is positive sequence. '+
-                        'Otherwise, angle between phases rotates with harmonic.';
-     PropertyHelp[7] := '{pos*| neg | zero} Set the phase angles for the specified symmetrical component sequence for non-harmonic solution modes. '+
-                        'Default is positive sequence. ';
+    PropertyHelp[1] := 'Name of bus to which source is connected.' + CRLF + 'bus1=busname' + CRLF + 'bus1=busname.1.2.3';
+    PropertyHelp[2] := 'Magnitude of current source, each phase, in Amps.';
+    PropertyHelp[3] := 'Phase angle in degrees of first phase: e.g.,Angle=10.3.' + CRLF +
+        'Phase shift between phases is assumed 120 degrees when ' +
+        'number of phases <= 3';
+    PropertyHelp[4] := 'Source frequency.  Defaults to  circuit fundamental frequency.';
+    PropertyHelp[5] := 'Number of phases.  Defaults to 3. For 3 or less, phase shift is 120 degrees.';
+    PropertyHelp[6] := '{pos*| zero | none} Maintain specified sequence for harmonic solution. Default is positive sequence. ' +
+        'Otherwise, angle between phases rotates with harmonic.';
+    PropertyHelp[7] := '{pos*| neg | zero} Set the phase angles for the specified symmetrical component sequence for non-harmonic solution modes. ' +
+        'Default is positive sequence. ';
 
 
-     ActiveProperty := NumPropsThisClass;
-     inherited DefineProperties;  // Add defs of inherited properties to bottom of list
+    ActiveProperty := NumPropsThisClass;
+    inherited DefineProperties;  // Add defs of inherited properties to bottom of list
 
      // Override help string
-     PropertyHelp[NumPropsThisClass+1] := 'Harmonic spectrum assumed for this source.  Default is "default".';
+    PropertyHelp[NumPropsThisClass + 1] := 'Harmonic spectrum assumed for this source.  Default is "default".';
 
-End;
+end;
 
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Function TIsource.NewObject(const ObjName:String):Integer;
-Begin
+function TIsource.NewObject(const ObjName: String): Integer;
+begin
     // Make a new voltage source and add it to Isource class list
-    With ActiveCircuit Do
-    Begin
-      ActiveCktElement := TIsourceObj.Create(Self, ObjName);
-      Result := AddObjectToList(ActiveDSSObject);
-    End;
-End;
+    with ActiveCircuit do
+    begin
+        ActiveCktElement := TIsourceObj.Create(Self, ObjName);
+        Result := AddObjectToList(ActiveDSSObject);
+    end;
+end;
 
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Function TIsource.Edit:Integer;
-VAR
-   ParamPointer :Integer;
-   ParamName,
-   Param        :String;
+function TIsource.Edit: Integer;
+var
+    ParamPointer: Integer;
+    ParamName,
+    Param: String;
 
-Begin
+begin
   // continue parsing with contents of Parser
-  ActiveIsourceObj            := ElementList.Active;
-  ActiveCircuit.ActiveCktElement := ActiveIsourceObj;
+    ActiveIsourceObj := ElementList.Active;
+    ActiveCircuit.ActiveCktElement := ActiveIsourceObj;
 
-  Result := 0;
+    Result := 0;
 
-  WITH ActiveIsourceObj DO Begin
+    with ActiveIsourceObj do
+    begin
 
-     ParamPointer := 0;
-     ParamName := Parser.NextParam;
-     Param     := Parser.StrValue;
-     WHILE Length(Param) > 0 DO Begin
-         IF Length(ParamName) = 0 THEN Inc(ParamPointer)
-         ELSE ParamPointer := CommandList.GetCommand(ParamName);
+        ParamPointer := 0;
+        ParamName := Parser.NextParam;
+        Param := Parser.StrValue;
+        while Length(Param) > 0 do
+        begin
+            if Length(ParamName) = 0 then
+                Inc(ParamPointer)
+            else
+                ParamPointer := CommandList.GetCommand(ParamName);
 
-         If (ParamPointer > 0) and (ParamPointer <= NumProperties) Then PropertyValue[ParamPointer] := Param;
+            if (ParamPointer > 0) and (ParamPointer <= NumProperties) then
+                PropertyValue[ParamPointer] := Param;
 
-         CASE ParamPointer OF
-            0: DoSimpleMsg('Unknown parameter "' + ParamName + '" for Object "' + Class_Name +'.'+ Name + '"', 330);
-            1: SetBus(1, param);
-            2: Amps     := Parser.DblValue;
-            3: Angle     := Parser.DblValue; // Ang
-            4: SrcFrequency     := Parser.DblValue; // freq
-            5: Begin
-                 Nphases   := Parser.IntValue; // num phases
-                 Case FNphases of
-                        1: FphaseShift := 0.0;
-                        2,3: FphaseShift := 120.0;
-                 Else     // higher order systems
-                     FphaseShift := 360.0/FNphases;
-                 End;
-                 NConds    := Fnphases;  // Force Reallocation of terminal info
-               End;
-            6: Case Uppercase(Param)[1] of
-                  'P': ScanType := 1;
-                  'Z': ScanType := 0;
-                  'N': ScanType := -1;
-                ELSE
-                   DoSimpleMsg('Unknown Scan Type for "' + Class_Name +'.'+ Name + '": '+Param, 331);
-                END;
-            7: Case Uppercase(Param)[1] of
-                  'P': SequenceType := 1;
-                  'Z': SequenceType := 0;
-                  'N': SequenceType := -1;
-                ELSE
-                   DoSimpleMsg('Unknown Sequence Type for "' + Class_Name +'.'+ Name + '": '+Param, 331);
-                END;
+            case ParamPointer of
+                0:
+                    DoSimpleMsg('Unknown parameter "' + ParamName + '" for Object "' + Class_Name + '.' + Name + '"', 330);
+                1:
+                    SetBus(1, param);
+                2:
+                    Amps := Parser.DblValue;
+                3:
+                    Angle := Parser.DblValue; // Ang
+                4:
+                    SrcFrequency := Parser.DblValue; // freq
+                5:
+                begin
+                    Nphases := Parser.IntValue; // num phases
+                    case FNphases of
+                        1:
+                            FphaseShift := 0.0;
+                        2, 3:
+                            FphaseShift := 120.0;
+                    else     // higher order systems
+                        FphaseShift := 360.0 / FNphases;
+                    end;
+                    NConds := Fnphases;  // Force Reallocation of terminal info
+                end;
+                6:
+                    case Uppercase(Param)[1] of
+                        'P':
+                            ScanType := 1;
+                        'Z':
+                            ScanType := 0;
+                        'N':
+                            ScanType := -1;
+                    else
+                        DoSimpleMsg('Unknown Scan Type for "' + Class_Name + '.' + Name + '": ' + Param, 331);
+                    end;
+                7:
+                    case Uppercase(Param)[1] of
+                        'P':
+                            SequenceType := 1;
+                        'Z':
+                            SequenceType := 0;
+                        'N':
+                            SequenceType := -1;
+                    else
+                        DoSimpleMsg('Unknown Sequence Type for "' + Class_Name + '.' + Name + '": ' + Param, 331);
+                    end;
 
-         ELSE
-            ClassEdit(ActiveIsourceObj, ParamPointer - NumPropsThisClass)
-         End;
-         ParamName := Parser.NextParam;
-         Param     := Parser.StrValue;
-     End;
+            else
+                ClassEdit(ActiveIsourceObj, ParamPointer - NumPropsThisClass)
+            end;
+            ParamName := Parser.NextParam;
+            Param := Parser.StrValue;
+        end;
 
-     RecalcElementData;
-     YPrimInvalid := True;
-  End;
+        RecalcElementData;
+        YPrimInvalid := TRUE;
+    end;
 
-End;
+end;
 
 //----------------------------------------------------------------------------
-Function TIsource.MakeLike(Const OtherSource:String):Integer;
-VAR
-   OtherIsource :TIsourceObj;
-   i :Integer;
+function TIsource.MakeLike(const OtherSource: String): Integer;
+var
+    OtherIsource: TIsourceObj;
+    i: Integer;
 
-Begin
-   Result := 0;
+begin
+    Result := 0;
    {See if we can find this line name in the present collection}
-   OtherIsource := Find(OtherSource);
-   IF   OtherIsource <> Nil THEN
-   WITH ActiveIsourceObj DO Begin
+    OtherIsource := Find(OtherSource);
+    if OtherIsource <> NIL then
+        with ActiveIsourceObj do
+        begin
 
-       IF Fnphases <> OtherIsource.Fnphases THEN Begin
-           Nphases := OtherIsource.Fnphases;
-           NConds  := Fnphases;  // Forces reallocation of terminal stuff
+            if Fnphases <> OtherIsource.Fnphases then
+            begin
+                Nphases := OtherIsource.Fnphases;
+                NConds := Fnphases;  // Forces reallocation of terminal stuff
 
-           Yorder := Fnconds * Fnterms;
-           YPrimInvalid := True;
-       End;
+                Yorder := Fnconds * Fnterms;
+                YPrimInvalid := TRUE;
+            end;
 
-       Amps             := OtherIsource.Amps;
-       Angle            := OtherIsource.Angle;
-       SrcFrequency     := OtherIsource.SrcFrequency;
-       Scantype         := OtherIsource.Scantype;
-       Sequencetype     := OtherIsource.Sequencetype;
+            Amps := OtherIsource.Amps;
+            Angle := OtherIsource.Angle;
+            SrcFrequency := OtherIsource.SrcFrequency;
+            Scantype := OtherIsource.Scantype;
+            Sequencetype := OtherIsource.Sequencetype;
 
 
-       ClassMakeLike(OtherIsource); // set spectrum,  base frequency
+            ClassMakeLike(OtherIsource); // set spectrum,  base frequency
 
-       For i := 1 to ParentClass.NumProperties Do PropertyValue[i] := OtherIsource.PropertyValue[i];
-       Result := 1;
-   End
-   ELSE  DoSimpleMsg('Error in Isource MakeLike: "' + OtherSource + '" Not Found.', 332);
+            for i := 1 to ParentClass.NumProperties do
+                PropertyValue[i] := OtherIsource.PropertyValue[i];
+            Result := 1;
+        end
+    else
+        DoSimpleMsg('Error in Isource MakeLike: "' + OtherSource + '" Not Found.', 332);
 
-End;
-
-//----------------------------------------------------------------------------
-Function TIsource.Init(Handle:Integer):Integer;
-
-Begin
-   DoSimpleMsg('Need to implement TIsource.Init', -1);
-   Result := 0;
-End;
+end;
 
 //----------------------------------------------------------------------------
-Constructor TIsourceObj.Create(ParClass:TDSSClass; const SourceName:String);
-Begin
-     Inherited create(ParClass);
-     Name := LowerCase(SourceName);
-     DSSObjType := ParClass.DSSClassType; // SOURCE + NON_PCPD_ELEM;  // Don't want this in PC Element List
+function TIsource.Init(Handle: Integer): Integer;
 
-     Nphases := 3;
-     Fnconds := 3;
-     Nterms  := 1;
+begin
+    DoSimpleMsg('Need to implement TIsource.Init', -1);
+    Result := 0;
+end;
 
-     Amps     := 0.0;
-     Angle    := 0.0;
-     SrcFrequency     := BaseFrequency;
-     FphaseShift := 120.0;
-     ScanType := 1;  // Pos Sequence
-     Sequencetype := 1;
+//----------------------------------------------------------------------------
+constructor TIsourceObj.Create(ParClass: TDSSClass; const SourceName: String);
+begin
+    inherited create(ParClass);
+    Name := LowerCase(SourceName);
+    DSSObjType := ParClass.DSSClassType; // SOURCE + NON_PCPD_ELEM;  // Don't want this in PC Element List
 
-     InitPropertyValues(0);
+    Nphases := 3;
+    Fnconds := 3;
+    Nterms := 1;
+
+    Amps := 0.0;
+    Angle := 0.0;
+    SrcFrequency := BaseFrequency;
+    FphaseShift := 120.0;
+    ScanType := 1;  // Pos Sequence
+    Sequencetype := 1;
+
+    InitPropertyValues(0);
 
 
-     Yorder := Fnterms * Fnconds;
-     RecalcElementData;
+    Yorder := Fnterms * Fnconds;
+    RecalcElementData;
 
-End;
+end;
 
 
 //----------------------------------------------------------------------------
-Destructor TIsourceObj.Destroy;
-Begin
-    Inherited Destroy;
-End;
+destructor TIsourceObj.Destroy;
+begin
+    inherited Destroy;
+end;
 
 //----------------------------------------------------------------------------
-Procedure TIsourceObj.RecalcElementData;
+procedure TIsourceObj.RecalcElementData;
 
 
-Begin
+begin
 
-      SpectrumObj := SpectrumClass.Find(Spectrum);
+    SpectrumObj := SpectrumClass.Find(Spectrum);
 
-      IF SpectrumObj=NIL Then Begin
-          DoSimpleMsg('Spectrum Object "' + Spectrum + '" for Device Isource.'+Name+' Not Found.', 333);
-      End;
+    if SpectrumObj = NIL then
+    begin
+        DoSimpleMsg('Spectrum Object "' + Spectrum + '" for Device Isource.' + Name + ' Not Found.', 333);
+    end;
 
-      Reallocmem(InjCurrent, SizeOf(InjCurrent^[1])*Yorder);
+    Reallocmem(InjCurrent, SizeOf(InjCurrent^[1]) * Yorder);
 
-End;
+end;
 
 //----------------------------------------------------------------------------
-Procedure TIsourceObj.CalcYPrim;
+procedure TIsourceObj.CalcYPrim;
 
 
-Begin
+begin
 
  // Build only YPrim Series
-     IF YPrimInvalid THEN Begin
-       IF YPrim_Series <> nil Then YPrim_Series.Free;
-       YPrim_Series := TcMatrix.CreateMatrix(Yorder);
-       IF YPrim <> nil Then YPrim.Free;
-       YPrim := TcMatrix.CreateMatrix(Yorder);
-     End
-     ELSE Begin
-          YPrim_Series.Clear;
-          YPrim.Clear;
-     End;
+    if YPrimInvalid then
+    begin
+        if YPrim_Series <> NIL then
+            YPrim_Series.Free;
+        YPrim_Series := TcMatrix.CreateMatrix(Yorder);
+        if YPrim <> NIL then
+            YPrim.Free;
+        YPrim := TcMatrix.CreateMatrix(Yorder);
+    end
+    else
+    begin
+        YPrim_Series.Clear;
+        YPrim.Clear;
+    end;
 
 
      {Yprim = 0  for Ideal Current Source;  just leave it zeroed}
 
      {Now Account for Open Conductors}
      {For any conductor that is open, zero out row and column}
-     Inherited CalcYPrim;
+    inherited CalcYPrim;
 
-     YPrimInvalid := False;
+    YPrimInvalid := FALSE;
 
-End;
+end;
 
-Function TIsourceObj.GetBaseCurr:Complex;
+function TIsourceObj.GetBaseCurr: Complex;
 
-VAr
-   SrcHarmonic:Double;
+var
+    SrcHarmonic: Double;
 
-Begin
+begin
 
-  TRY
+    try
 
-      WITH ActiveCircuit.Solution Do
+        with ActiveCircuit.Solution do
   {Get first Phase Current}
-       IF IsHarmonicModel THEN
-       Begin
-            SrcHarmonic := Frequency/SrcFrequency;
-            Result := CMulReal(SpectrumObj.GetMult(SrcHarmonic), Amps);  // Base current for this harmonic
-            RotatePhasorDeg(Result, SrcHarmonic, Angle);
-       End
-       ELSE
-       Begin
-            IF abs(Frequency - SrcFrequency) < EPSILON2 THEN Result := pdegtocomplex(Amps, Angle)  Else Result := CZERO;
-       End;
+            if IsHarmonicModel then
+            begin
+                SrcHarmonic := Frequency / SrcFrequency;
+                Result := CMulReal(SpectrumObj.GetMult(SrcHarmonic), Amps);  // Base current for this harmonic
+                RotatePhasorDeg(Result, SrcHarmonic, Angle);
+            end
+            else
+            begin
+                if abs(Frequency - SrcFrequency) < EPSILON2 then
+                    Result := pdegtocomplex(Amps, Angle)
+                else
+                    Result := CZERO;
+            end;
 
-  EXCEPT
-      DoSimpleMsg('Error computing current for Isource.'+Name+'. Check specification. Aborting.', 334);
-      IF In_Redirect Then Redirect_Abort := TRUE;
-  END;
+    except
+        DoSimpleMsg('Error computing current for Isource.' + Name + '. Check specification. Aborting.', 334);
+        if In_Redirect then
+            Redirect_Abort := TRUE;
+    end;
 
-End;
+end;
 
-Function TIsourceObj.InjCurrents:Integer;
+function TIsourceObj.InjCurrents: Integer;
 
 {Sum Currents directly into solution array}
 
-Begin
-  GetInjCurrents(InjCurrent);
+begin
+    GetInjCurrents(InjCurrent);
 
-  Result := Inherited Injcurrents;  // Adds into system array
+    Result := inherited Injcurrents;  // Adds into system array
 
-End;
+end;
 
-Procedure TIsourceObj.GetCurrents(Curr: pComplexArray);
+procedure TIsourceObj.GetCurrents(Curr: pComplexArray);
 
 {Total currents into a device}
 
-VAR
-   i:Integer;
+var
+    i: Integer;
 
-Begin
+begin
 
-  TRY
-       GetInjCurrents(ComplexBuffer);  // Get present value of inj currents
+    try
+        GetInjCurrents(ComplexBuffer);  // Get present value of inj currents
       // Add Together  with yprim currents
-       FOR i := 1 TO Yorder DO Curr^[i] := Cnegate(ComplexBuffer^[i]);
+        for i := 1 to Yorder do
+            Curr^[i] := Cnegate(ComplexBuffer^[i]);
 
-  EXCEPT
-    On E: Exception
-    Do DoErrorMsg(('GetCurrents for Isource Element: ' + Name + '.'), E.Message,
-        'Inadequate storage allotted for circuit element?', 335);
-  End;
+    except
+        On E: Exception do
+            DoErrorMsg(('GetCurrents for Isource Element: ' + Name + '.'), E.Message,
+                'Inadequate storage allotted for circuit element?', 335);
+    end;
 
-End;
+end;
 
-Procedure TIsourceObj.GetInjCurrents(Curr:pComplexArray);
+procedure TIsourceObj.GetInjCurrents(Curr: pComplexArray);
 
 {Fill Up an array of injection currents}
 
-VAR
-   i:Integer;
-   BaseCurr :complex;
-Begin
+var
+    i: Integer;
+    BaseCurr: complex;
+begin
 
-     WITH ActiveCircuit.solution DO  Begin
-       BaseCurr := GetBaseCurr;   // this func applies spectrum if needed
+    with ActiveCircuit.solution do
+    begin
+        BaseCurr := GetBaseCurr;   // this func applies spectrum if needed
 
-       For i := 1 to Fnphases Do Begin
-           Curr^[i] := BaseCurr ;
-           If (i < Fnphases) Then Begin
+        for i := 1 to Fnphases do
+        begin
+            Curr^[i] := BaseCurr;
+            if (i < Fnphases) then
+            begin
 
-               If IsHarmonicModel Then
+                if IsHarmonicModel then
 
-                 CASE ScanType of
-                     1: RotatePhasorDeg(BaseCurr, 1.0, -FphaseShift); // maintain positive sequence for isource
-                     0: ;  // Do not rotate for zero sequence
-                   Else
-                     RotatePhasorDeg(BaseCurr, Harmonic, -FphaseShift) // rotate by frequency
+                    case ScanType of
+                        1:
+                            RotatePhasorDeg(BaseCurr, 1.0, -FphaseShift); // maintain positive sequence for isource
+                        0: ;  // Do not rotate for zero sequence
+                    else
+                        RotatePhasorDeg(BaseCurr, Harmonic, -FphaseShift) // rotate by frequency
                      {Harmonic 1 will be pos; 2 is neg; 3 is zero, and so on.}
-                 END
+                    end
 
-               Else
+                else
 
-                 CASE SequenceType of
-                   -1: RotatePhasorDeg(BaseCurr, 1.0, FphaseShift); // Neg seq
-                    0: ;  // Do not rotate for zero sequence
-                 ELSE
-                       RotatePhasorDeg(BaseCurr, 1.0, -FphaseShift) ; // Maintain pos seq
-                 END;
+                    case SequenceType of
+                        -1:
+                            RotatePhasorDeg(BaseCurr, 1.0, FphaseShift); // Neg seq
+                        0: ;  // Do not rotate for zero sequence
+                    else
+                        RotatePhasorDeg(BaseCurr, 1.0, -FphaseShift); // Maintain pos seq
+                    end;
 
-           End;
-       End;
-     End;
-End;
+            end;
+        end;
+    end;
+end;
 
-Procedure TIsourceObj.DumpProperties(Var F:TextFile; Complete:Boolean);
+procedure TIsourceObj.DumpProperties(var F: TextFile; Complete: Boolean);
 
-VAR
-   i:Integer;
+var
+    i: Integer;
 
-Begin
-    Inherited DumpProperties(F,Complete);
+begin
+    inherited DumpProperties(F, Complete);
 
-    With ParentClass Do
-     For i := 1 to NumProperties Do
-     Begin
-        Writeln(F,'~ ',PropertyName^[i],'=',PropertyValue[i]);
-     End;
+    with ParentClass do
+        for i := 1 to NumProperties do
+        begin
+            Writeln(F, '~ ', PropertyName^[i], '=', PropertyValue[i]);
+        end;
 
-    If Complete Then Begin
-      Writeln(F);
-      Writeln(F);
-    End;
+    if Complete then
+    begin
+        Writeln(F);
+        Writeln(F);
+    end;
 
-End;
+end;
 
 procedure TIsourceObj.InitPropertyValues(ArrayOffset: Integer);
 begin
 
-     PropertyValue[1]  := GetBus(1);
-     PropertyValue[2]  := '0';
-     PropertyValue[3]  := '0';
-     PropertyValue[4]  := Format('%-.6g',[SrcFrequency]);
-     PropertyValue[5]  := '3';
-     PropertyValue[6]  := 'pos';
-     PropertyValue[7]  := 'pos';
+    PropertyValue[1] := GetBus(1);
+    PropertyValue[2] := '0';
+    PropertyValue[3] := '0';
+    PropertyValue[4] := Format('%-.6g', [SrcFrequency]);
+    PropertyValue[5] := '3';
+    PropertyValue[6] := 'pos';
+    PropertyValue[7] := 'pos';
 
     inherited  InitPropertyValues(NumPropsThisClass);
 
@@ -501,15 +556,14 @@ end;
 procedure TIsourceObj.MakePosSequence;
 begin
 
-  If Fnphases>1 Then
-  Begin
-     Parser.CmdString := 'phases=1';
-     Edit;
-  End;
-  inherited;
+    if Fnphases > 1 then
+    begin
+        Parser.CmdString := 'phases=1';
+        Edit;
+    end;
+    inherited;
 
 end;
-
 
 
 end.

@@ -23,805 +23,841 @@ unit DSSGlobals;
 
 interface
 
-Uses Classes, DSSClassDefs, DSSObject, DSSClass, ParserDel, Hashlist, PointerList,
-     UComplex, Circuit, IniRegSave, // Graphics,  TEMc
+uses
+    Classes,
+    DSSClassDefs,
+    DSSObject,
+    DSSClass,
+    ParserDel,
+    Hashlist,
+    PointerList,
+    UComplex,
+    Circuit,
+    IniRegSave, // Graphics,  TEMc
 
      {Some units which have global vars defined here}
-     Spectrum,
-     LoadShape,
-     TempShape,
-     PriceShape,
-     XYCurve,
-     GrowthShape,
-     Monitor,
-     EnergyMeter,
-     Sensor,
-     TCC_Curve,
-     WireData,
-     CNData,
-     TSData,
-     LineSpacing,
-     Storage,
-     PVSystem,
-     InvControl,
-     ExpControl;
+    Spectrum,
+    LoadShape,
+    TempShape,
+    PriceShape,
+    XYCurve,
+    GrowthShape,
+    Monitor,
+    EnergyMeter,
+    Sensor,
+    TCC_Curve,
+    WireData,
+    CNData,
+    TSData,
+    LineSpacing,
+    Storage,
+    PVSystem,
+    InvControl,
+    ExpControl;
 
+const
+    CRLF = #13#10;
 
-CONST
-      CRLF = #13#10;
+    PI = 3.14159265359;
 
-      PI =  3.14159265359;
+    TwoPi = 2.0 * PI;
 
-      TwoPi = 2.0 * PI;
+    RadiansToDegrees = 57.29577951;
 
-      RadiansToDegrees = 57.29577951;
+    EPSILON = 1.0e-12;   // Default tiny floating point
+    EPSILON2 = 1.0e-3;   // Default for Real number mismatch testing
 
-      EPSILON = 1.0e-12;   // Default tiny floating point
-      EPSILON2 = 1.0e-3;   // Default for Real number mismatch testing
-
-      POWERFLOW  = 1;  // Load model types for solution
-      ADMITTANCE = 2;
+    POWERFLOW = 1;  // Load model types for solution
+    ADMITTANCE = 2;
 
       // For YPrim matrices
-      ALL_YPRIM = 0;
-      SERIES = 1;
-      SHUNT  = 2;
+    ALL_YPRIM = 0;
+    SERIES = 1;
+    SHUNT = 2;
 
       {Control Modes}
-      CONTROLSOFF = -1;
-      EVENTDRIVEN =  1;
-      TIMEDRIVEN  =  2;
-      CTRLSTATIC  =  0;
+    CONTROLSOFF = -1;
+    EVENTDRIVEN = 1;
+    TIMEDRIVEN = 2;
+    CTRLSTATIC = 0;
 
       {Randomization Constants}
-      GAUSSIAN  = 1;
-      UNIFORM   = 2;
-      LOGNORMAL = 3;
+    GAUSSIAN = 1;
+    UNIFORM = 2;
+    LOGNORMAL = 3;
 
       {Autoadd Constants}
-      GENADD = 1;
-      CAPADD = 2;
+    GENADD = 1;
+    CAPADD = 2;
 
       {ERRORS}
-      SOLUTION_ABORT = 99;
+    SOLUTION_ABORT = 99;
 
       {For General Sequential Time Simulations}
-      USEDAILY  = 0;
-      USEYEARLY = 1;
-      USEDUTY   = 2;
-      USENONE   =-1;
+    USEDAILY = 0;
+    USEYEARLY = 1;
+    USEDUTY = 2;
+    USENONE = -1;
 
       {Earth Model}
-      SIMPLECARSON  = 1;
-      FULLCARSON    = 2;
-      DERI          = 3;
+    SIMPLECARSON = 1;
+    FULLCARSON = 2;
+    DERI = 3;
 
       {Profile Plot Constants}
-      PROFILE3PH = 9999; // some big number > likely no. of phases
-      PROFILEALL = 9998;
-      PROFILEALLPRI = 9997;
-      PROFILELLALL = 9996;
-      PROFILELLPRI = 9995;
-      PROFILELL    = 9994;
+    PROFILE3PH = 9999; // some big number > likely no. of phases
+    PROFILEALL = 9998;
+    PROFILEALLPRI = 9997;
+    PROFILELLALL = 9996;
+    PROFILELLPRI = 9995;
+    PROFILELL = 9994;
 
 
-VAR
+var
 
-   DLLFirstTime   :Boolean=TRUE;
-   DLLDebugFile   :TextFile;
-   ProgramName    :String;
-   DSS_Registry   :TIniRegSave; // Registry   (See Executive)
-   
-   IsDLL,
-   NoFormsAllowed  :Boolean;
+    DLLFirstTime: Boolean = TRUE;
+    DLLDebugFile: TextFile;
+    ProgramName: String;
+    DSS_Registry: TIniRegSave; // Registry   (See Executive)
 
-   ActiveCircuit   :TDSSCircuit;
-   ActiveDSSClass  :TDSSClass;
-   LastClassReferenced:Integer;  // index of class of last thing edited
-   ActiveDSSObject :TDSSObject;
-   NumCircuits     :Integer;
-   MaxCircuits     :Integer;
-   MaxBusLimit     :Integer; // Set in Validation
-   MaxAllocationIterations :Integer;
-   Circuits        :TPointerList;
-   DSSObjs         :TPointerList;
+    IsDLL,
+    NoFormsAllowed: Boolean;
 
-   AuxParser       :TParser;  // Auxiliary parser for use by anybody for reparsing values
+    ActiveCircuit: TDSSCircuit;
+    ActiveDSSClass: TDSSClass;
+    LastClassReferenced: Integer;  // index of class of last thing edited
+    ActiveDSSObject: TDSSObject;
+    NumCircuits: Integer;
+    MaxCircuits: Integer;
+    MaxBusLimit: Integer; // Set in Validation
+    MaxAllocationIterations: Integer;
+    Circuits: TPointerList;
+    DSSObjs: TPointerList;
+
+    AuxParser: TParser;  // Auxiliary parser for use by anybody for reparsing values
 
 //{****} DebugTrace:TextFile;
 
 
-   ErrorPending       :Boolean;
-   CmdResult,
-   ErrorNumber        :Integer;
-   LastErrorMessage   :String;
+    ErrorPending: Boolean;
+    CmdResult,
+    ErrorNumber: Integer;
+    LastErrorMessage: String;
 
-   DefaultEarthModel  :Integer;
-   ActiveEarthModel   :Integer;
+    DefaultEarthModel: Integer;
+    ActiveEarthModel: Integer;
 
-   LastFileCompiled   :String;
-   LastCommandWasCompile :Boolean;
+    LastFileCompiled: String;
+    LastCommandWasCompile: Boolean;
 
-   CALPHA             :Complex;  {120-degree shift constant}
-   SQRT2              :Double;
-   SQRT3              :Double;
-   InvSQRT3           :Double;
-   InvSQRT3x1000      :Double;
-   SolutionAbort      :Boolean;
-   InShowResults      :Boolean;
-   Redirect_Abort     :Boolean;
-   In_Redirect        :Boolean;
-   DIFilesAreOpen     :Boolean;
-   AutoShowExport     :Boolean;
-   SolutionWasAttempted :Boolean;
+    CALPHA: Complex;  {120-degree shift constant}
+    SQRT2: Double;
+    SQRT3: Double;
+    InvSQRT3: Double;
+    InvSQRT3x1000: Double;
+    SolutionAbort: Boolean;
+    InShowResults: Boolean;
+    Redirect_Abort: Boolean;
+    In_Redirect: Boolean;
+    DIFilesAreOpen: Boolean;
+    AutoShowExport: Boolean;
+    SolutionWasAttempted: Boolean;
 
-   GlobalHelpString   :String;
-   GlobalPropertyValue:String;
-   GlobalResult       :String;
-   LastResultFile     :String;
-   VersionString      :String;
+    GlobalHelpString: String;
+    GlobalPropertyValue: String;
+    GlobalResult: String;
+    LastResultFile: String;
+    VersionString: String;
 
-   LogQueries         :Boolean;
-   QueryFirstTime     :Boolean;
-   QueryLogFileName   :String;
-   QueryLogFile       :TextFile;
+    LogQueries: Boolean;
+    QueryFirstTime: Boolean;
+    QueryLogFileName: String;
+    QueryLogFile: TextFile;
 
-   DefaultEditor    :String;     // normally, Notepad
-   DefaultFontSize  :Integer;
-   DefaultFontName  :String;
-   DefaultFontStyles :Integer; // TFontStyles; TEMc
-   DSSFileName      :String;     // Name of current exe or DLL
-   DSSDirectory     :String;     // where the current exe resides
-   StartupDirectory :String;     // Where we started
-   DataDirectory    :String;     // used to be DSSDataDirectory
-   OutputDirectory  :String;     // output files go here, same as DataDirectory if writable
-   CircuitName_     :String;     // Name of Circuit with a "_" appended
+    DefaultEditor: String;     // normally, Notepad
+    DefaultFontSize: Integer;
+    DefaultFontName: String;
+    DefaultFontStyles: Integer; // TFontStyles; TEMc
+    DSSFileName: String;     // Name of current exe or DLL
+    DSSDirectory: String;     // where the current exe resides
+    StartupDirectory: String;     // Where we started
+    DataDirectory: String;     // used to be DSSDataDirectory
+    OutputDirectory: String;     // output files go here, same as DataDirectory if writable
+    CircuitName_: String;     // Name of Circuit with a "_" appended
 
-   DefaultBaseFreq  :Double;
-   DaisySize        :Double;
+    DefaultBaseFreq: Double;
+    DaisySize: Double;
 
    // Some commonly used classes   so we can find them easily
-   LoadShapeClass     :TLoadShape;
-   TShapeClass        :TTshape;
-   PriceShapeClass    :TPriceShape;
-   XYCurveClass       :TXYCurve;
-   GrowthShapeClass   :TGrowthShape;
-   SpectrumClass      :TSpectrum;
-   SolutionClass      :TDSSClass;
-   EnergyMeterClass   :TEnergyMeter;
+    LoadShapeClass: TLoadShape;
+    TShapeClass: TTshape;
+    PriceShapeClass: TPriceShape;
+    XYCurveClass: TXYCurve;
+    GrowthShapeClass: TGrowthShape;
+    SpectrumClass: TSpectrum;
+    SolutionClass: TDSSClass;
+    EnergyMeterClass: TEnergyMeter;
    // FeederClass        :TFeeder;
-   MonitorClass       :TDSSMonitor;
-   SensorClass        :TSensor;
-   TCC_CurveClass     :TTCC_Curve;
-   WireDataClass      :TWireData;
-   CNDataClass        :TCNData;
-   TSDataClass        :TTSData;
-   LineSpacingClass   :TLineSpacing;
-   StorageClass       :TStorage;
-   PVSystemClass      :TPVSystem;
-   InvControlClass     :TInvControl;
-   ExpControlClass    :TExpControl;
+    MonitorClass: TDSSMonitor;
+    SensorClass: TSensor;
+    TCC_CurveClass: TTCC_Curve;
+    WireDataClass: TWireData;
+    CNDataClass: TCNData;
+    TSDataClass: TTSData;
+    LineSpacingClass: TLineSpacing;
+    StorageClass: TStorage;
+    PVSystemClass: TPVSystem;
+    InvControlClass: TInvControl;
+    ExpControlClass: TExpControl;
 
-   EventStrings: TStringList;
-   SavedFileList:TStringList;
+    EventStrings: TStringList;
+    SavedFileList: TStringList;
 
-   DSSClassList       :TPointerList; // pointers to the base class types
-   ClassNames         :THashList;
+    DSSClassList: TPointerList; // pointers to the base class types
+    ClassNames: THashList;
 
-   UpdateRegistry     :Boolean;  // update on program exit
-   CPU_Freq           : int64;          // Used to store the CPU frequency
-   CPU_Cores          : integer;
+    UpdateRegistry: Boolean;  // update on program exit
+    CPU_Freq: Int64;          // Used to store the CPU frequency
+    CPU_Cores: Integer;
 
 
+procedure DoErrorMsg(const S, Emsg, ProbCause: String; ErrNum: Integer);
+procedure DoSimpleMsg(const S: String; ErrNum: Integer);
 
-PROCEDURE DoErrorMsg(Const S, Emsg, ProbCause :String; ErrNum:Integer);
-PROCEDURE DoSimpleMsg(Const S :String; ErrNum:Integer);
+procedure ClearAllCircuits;
 
-PROCEDURE ClearAllCircuits;
+procedure SetObject(const param: String);
+function SetActiveBus(const BusName: String): Integer;
+procedure SetDataPath(const PathName: String);
 
-PROCEDURE SetObject(const param :string);
-FUNCTION  SetActiveBus(const BusName:String):Integer;
-PROCEDURE SetDataPath(const PathName:String);
+procedure SetLastResultFile(const Fname: String);
 
-PROCEDURE SetLastResultFile(Const Fname:String);
+procedure MakeNewCircuit(const Name: String);
 
-PROCEDURE MakeNewCircuit(Const Name:String);
+procedure AppendGlobalResult(const s: String);
+procedure AppendGlobalResultCRLF(const S: String);  // Separate by CRLF
 
-PROCEDURE AppendGlobalResult(Const s:String);
-PROCEDURE AppendGlobalResultCRLF(const S:String);  // Separate by CRLF
+procedure ResetQueryLogFile;
+procedure WriteQueryLogFile(const Prop, S: String);
 
-PROCEDURE ResetQueryLogFile;
-PROCEDURE WriteQueryLogFile(Const Prop, S:String);
+procedure WriteDLLDebugFile(const S: String);
 
-PROCEDURE WriteDLLDebugFile(Const S:String);
+procedure ReadDSS_Registry;
+procedure WriteDSS_Registry;
 
-PROCEDURE ReadDSS_Registry;
-PROCEDURE WriteDSS_Registry;
+function IsDSSDLL(Fname: String): Boolean;
 
-FUNCTION IsDSSDLL(Fname:String):Boolean;
+function GetOutputDirectory: String;
 
-Function GetOutputDirectory:String;
-
-Procedure MyReallocMem(Var p:Pointer; newsize:integer);
-Function MyAllocMem(nbytes:Cardinal):Pointer;
-
+procedure MyReallocMem(var p: Pointer; newsize: Integer);
+function MyAllocMem(nbytes: Cardinal): Pointer;
 
 
 implementation
 
 
+uses {Forms,   Controls,}
+    SysUtils,
+     {LCLIntf, LCLType,} dynlibs,
+    resource,
+    versiontypes,
+    versionresource,
+    CmdForms,
+    Solution,
+    Executive;
 
-USES  {Forms,   Controls,}
-     SysUtils,
-     {LCLIntf, LCLType,} dynlibs, resource, versiontypes, versionresource,
-     CmdForms,
-     Solution,
-     Executive;
      {Intrinsic Ckt Elements}
 
-TYPE
+type
 
-   THandle = Integer;
+    THandle = Integer;
 
-   TDSSRegister = function(var ClassName: pchar):Integer;  // Returns base class 1 or 2 are defined
+    TDSSRegister = function(var ClassName: Pchar): Integer;  // Returns base class 1 or 2 are defined
    // Users can only define circuit elements at present
 
-VAR
+var
 
-   LastUserDLLHandle: THandle;
-   DSSRegisterProc:TDSSRegister;   // of last library loaded
+    LastUserDLLHandle: THandle;
+    DSSRegisterProc: TDSSRegister;   // of last library loaded
 
-FUNCTION GetDefaultDataDirectory: String;
-Begin
+function GetDefaultDataDirectory: String;
+begin
 {$IFDEF UNIX}
-  Result := GetEnvironmentVariable('HOME') + '/Documents';
+    Result := GetEnvironmentVariable('HOME') + '/Documents';
 {$ENDIF}
 {$IFDEF WINDOWS}
-  Result := GetEnvironmentVariable('HOMEDRIVE') + GetEnvironmentVariable('HOMEPATH') + '\Documents';
+    Result := GetEnvironmentVariable('HOMEDRIVE') + GetEnvironmentVariable('HOMEPATH') + '\Documents';
 {$ENDIF}
 end;
 
-FUNCTION GetDefaultScratchDirectory: String;
+function GetDefaultScratchDirectory: String;
 //Var
 //  ThePath:Array[0..MAX_PATH] of char;
-Begin
+begin
 //  FillChar(ThePath, SizeOF(ThePath), #0);
 //  SHGetFolderPath (0, CSIDL_LOCAL_APPDATA, 0, 0, ThePath);
 //  Result := ThePath;
   {$IFDEF UNIX}
-  Result := '/tmp';
+    Result := '/tmp';
   {$ENDIF}
   {$IFDEF WINDOWS}
-  Result := GetEnvironmentVariable('LOCALAPPDATA');
+    Result := GetEnvironmentVariable('LOCALAPPDATA');
   {$ENDIF}
-End;
+end;
 
-function GetOutputDirectory:String;
+function GetOutputDirectory: String;
 begin
-  Result := OutputDirectory;
+    Result := OutputDirectory;
 end;
 
 {--------------------------------------------------------------}
-FUNCTION IsDSSDLL(Fname:String):Boolean;
+function IsDSSDLL(Fname: String): Boolean;
 
-Begin
+begin
     Result := FALSE;
 
     // Ignore if "DSSLIB.DLL"
-    If CompareText(ExtractFileName(Fname),'dsslib.dll')=0 Then Exit;
+    if CompareText(ExtractFileName(Fname), 'dsslib.dll') = 0 then
+        Exit;
 
-   LastUserDLLHandle := LoadLibrary(pchar(Fname));
-   IF LastUserDLLHandle <> 0 then BEGIN
+    LastUserDLLHandle := LoadLibrary(Pchar(Fname));
+    if LastUserDLLHandle <> 0 then
+    begin
 
    // Assign the address of the DSSRegister proc to DSSRegisterProc variable
-    @DSSRegisterProc := GetProcAddress(LastUserDLLHandle, 'DSSRegister');
-    IF @DSSRegisterProc <> nil THEN Result := TRUE
-    ELSE FreeLibrary(LastUserDLLHandle);
+        @DSSRegisterProc := GetProcAddress(LastUserDLLHandle, 'DSSRegister');
+        if @DSSRegisterProc <> NIL then
+            Result := TRUE
+        else
+            FreeLibrary(LastUserDLLHandle);
 
-  END;
+    end;
 
-End;
-
-//----------------------------------------------------------------------------
-PROCEDURE DoErrorMsg(Const S, Emsg, ProbCause:String; ErrNum:Integer);
-
-VAR
-    Msg:String;
-    Retval:Integer;
-Begin
-
-     Msg := Format('Error %d Reported From OpenDSS Intrinsic Function: ', [Errnum])+ CRLF  + S
-             + CRLF   + CRLF + 'Error Description: ' + CRLF + Emsg
-             + CRLF   + CRLF + 'Probable Cause: ' + CRLF+ ProbCause;
-
-     If Not NoFormsAllowed Then Begin
-
-         If In_Redirect Then
-         Begin
-           RetVal := DSSMessageDlg(Msg, FALSE);
-           If RetVal = -1 Then Redirect_Abort := True;
-         End
-         Else
-           DSSMessageDlg(Msg, TRUE);
-
-     End;
-
-     LastErrorMessage := Msg;
-     ErrorNumber := ErrNum;
-     AppendGlobalResultCRLF(Msg);
-End;
+end;
 
 //----------------------------------------------------------------------------
-PROCEDURE AppendGlobalResultCRLF(const S:String);
+procedure DoErrorMsg(const S, Emsg, ProbCause: String; ErrNum: Integer);
 
-Begin
-    If Length(GlobalResult) > 0
-    THEN GlobalResult := GlobalResult + CRLF + S
-    ELSE GlobalResult := S;
-End;
+var
+    Msg: String;
+    Retval: Integer;
+begin
 
-//----------------------------------------------------------------------------
-PROCEDURE DoSimpleMsg(Const S:String; ErrNum:Integer);
+    Msg := Format('Error %d Reported From OpenDSS Intrinsic Function: ', [Errnum]) + CRLF + S + CRLF + CRLF + 'Error Description: ' + CRLF + Emsg + CRLF + CRLF + 'Probable Cause: ' + CRLF + ProbCause;
 
-VAR
-    Retval:Integer;
-Begin
+    if not NoFormsAllowed then
+    begin
 
-      IF Not NoFormsAllowed Then Begin
-       IF   In_Redirect
-       THEN Begin
-         RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
-         IF   RetVal = -1
-         THEN Redirect_Abort := True;
-       End
-       ELSE
-         DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
-      End;
+        if In_Redirect then
+        begin
+            RetVal := DSSMessageDlg(Msg, FALSE);
+            if RetVal = -1 then
+                Redirect_Abort := TRUE;
+        end
+        else
+            DSSMessageDlg(Msg, TRUE);
 
-     LastErrorMessage := S;
-     ErrorNumber := ErrNum;
-     AppendGlobalResultCRLF(S);
-End;
+    end;
 
+    LastErrorMessage := Msg;
+    ErrorNumber := ErrNum;
+    AppendGlobalResultCRLF(Msg);
+end;
 
 //----------------------------------------------------------------------------
-PROCEDURE SetObject(const param :string);
+procedure AppendGlobalResultCRLF(const S: String);
+
+begin
+    if Length(GlobalResult) > 0 then
+        GlobalResult := GlobalResult + CRLF + S
+    else
+        GlobalResult := S;
+end;
+
+//----------------------------------------------------------------------------
+procedure DoSimpleMsg(const S: String; ErrNum: Integer);
+
+var
+    Retval: Integer;
+begin
+
+    if not NoFormsAllowed then
+    begin
+        if In_Redirect then
+        begin
+            RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
+            if RetVal = -1 then
+                Redirect_Abort := TRUE;
+        end
+        else
+            DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
+    end;
+
+    LastErrorMessage := S;
+    ErrorNumber := ErrNum;
+    AppendGlobalResultCRLF(S);
+end;
+
+
+//----------------------------------------------------------------------------
+procedure SetObject(const param: String);
 
 {Set object active by name}
 
-VAR
-   dotpos :Integer;
-   ObjName, ObjClass :String;
+var
+    dotpos: Integer;
+    ObjName, ObjClass: String;
 
-Begin
+begin
 
       // Split off Obj class and name
-      dotpos := Pos('.', Param);
-      CASE dotpos OF
-         0:ObjName := Copy(Param, 1, Length(Param));  // assume it is all name; class defaults
-      ELSE Begin
-           ObjClass := Copy(Param, 1, dotpos-1);
-           ObjName  := Copy(Param, dotpos+1, Length(Param));
-           End;
-      End;
+    dotpos := Pos('.', Param);
+    case dotpos of
+        0:
+            ObjName := Copy(Param, 1, Length(Param));  // assume it is all name; class defaults
+    else
+    begin
+        ObjClass := Copy(Param, 1, dotpos - 1);
+        ObjName := Copy(Param, dotpos + 1, Length(Param));
+    end;
+    end;
 
-      IF Length(ObjClass) > 0 THEN SetObjectClass(ObjClass);
+    if Length(ObjClass) > 0 then
+        SetObjectClass(ObjClass);
 
-      ActiveDSSClass := DSSClassList.Get(LastClassReferenced);
-      IF ActiveDSSClass <> Nil THEN
-      Begin
-        IF Not ActiveDSSClass.SetActive(Objname) THEN
-        Begin // scroll through list of objects untill a match
-          DoSimpleMsg('Error! Object "' + ObjName + '" not found.'+ CRLF + parser.CmdString, 904);
-        End
-        ELSE
-        With ActiveCircuit Do
-        Begin
-           CASE ActiveDSSObject.DSSObjType OF
-                DSS_OBJECT: ;  // do nothing for general DSS object
+    ActiveDSSClass := DSSClassList.Get(LastClassReferenced);
+    if ActiveDSSClass <> NIL then
+    begin
+        if not ActiveDSSClass.SetActive(Objname) then
+        begin // scroll through list of objects untill a match
+            DoSimpleMsg('Error! Object "' + ObjName + '" not found.' + CRLF + parser.CmdString, 904);
+        end
+        else
+            with ActiveCircuit do
+            begin
+                case ActiveDSSObject.DSSObjType of
+                    DSS_OBJECT: ;  // do nothing for general DSS object
 
-           ELSE Begin   // for circuit types, set ActiveCircuit Element, too
-                 ActiveCktElement := ActiveDSSClass.GetActiveObj;
-                End;
-           End;
-        End;
-      End
-      ELSE
+                else
+                begin   // for circuit types, set ActiveCircuit Element, too
+                    ActiveCktElement := ActiveDSSClass.GetActiveObj;
+                end;
+                end;
+            end;
+    end
+    else
         DoSimpleMsg('Error! Active object type/class is not set.', 905);
 
-End;
+end;
 
 //----------------------------------------------------------------------------
-FUNCTION SetActiveBus(const BusName:String):Integer;
+function SetActiveBus(const BusName: String): Integer;
 
 
-Begin
+begin
 
    // Now find the bus and set active
-   Result := 0;
+    Result := 0;
 
-   WITH ActiveCircuit Do
-     Begin
-        If BusList.ListSize=0 Then Exit;   // Buslist not yet built
+    with ActiveCircuit do
+    begin
+        if BusList.ListSize = 0 then
+            Exit;   // Buslist not yet built
         ActiveBusIndex := BusList.Find(BusName);
-        IF   ActiveBusIndex=0 Then
-          Begin
+        if ActiveBusIndex = 0 then
+        begin
             Result := 1;
             AppendGlobalResult('SetActiveBus: Bus ' + BusName + ' Not Found.');
-          End;
-     End;
+        end;
+    end;
 
-End;
+end;
 
-PROCEDURE ClearAllCircuits;
+procedure ClearAllCircuits;
 
-Begin
+begin
 
     ActiveCircuit := Circuits.First;
-     WHILE ActiveCircuit<>nil DO
-     Begin
+    while ActiveCircuit <> NIL do
+    begin
         ActiveCircuit.Free;
         ActiveCircuit := Circuits.Next;
-     End;
+    end;
     Circuits.Free;
     Circuits := TPointerList.Create(2);   // Make a new list of circuits
     NumCircuits := 0;
 
     // Revert on key global flags to Original States
-    DefaultEarthModel     := DERI;
-    LogQueries            := FALSE;
+    DefaultEarthModel := DERI;
+    LogQueries := FALSE;
     MaxAllocationIterations := 2;
 
-End;
+end;
 
 
-
-PROCEDURE MakeNewCircuit(Const Name:String);
+procedure MakeNewCircuit(const Name: String);
 
 //Var
 //   handle :Integer;
-Var
-    S:String;
+var
+    S: String;
 
-Begin
+begin
 
 
-     If NumCircuits <= MaxCircuits - 1 Then
-     Begin
-         ActiveCircuit := TDSSCircuit.Create(Name);
-         ActiveDSSObject := ActiveSolutionObj;
+    if NumCircuits <= MaxCircuits - 1 then
+    begin
+        ActiveCircuit := TDSSCircuit.Create(Name);
+        ActiveDSSObject := ActiveSolutionObj;
          {*Handle := *} Circuits.Add(ActiveCircuit);
-         Inc(NumCircuits);
-         S := Parser.Remainder;    // Pass remainder of string on to vsource.
+        Inc(NumCircuits);
+        S := Parser.Remainder;    // Pass remainder of string on to vsource.
          {Create a default Circuit}
-         SolutionABort := FALSE;
+        SolutionABort := FALSE;
          {Voltage source named "source" connected to SourceBus}
-         DSSExecutive.Command := 'New object=vsource.source Bus1=SourceBus ' + S;  // Load up the parser as if it were read in
-     End
-     Else
-     Begin
-         DoErrorMsg('MakeNewCircuit',
-                    'Cannot create new circuit.',
-                    'Max. Circuits Exceeded.'+CRLF+
-                    '(Max no. of circuits='+inttostr(Maxcircuits)+')', 906);
-     End;
-End;
+        DSSExecutive.Command := 'New object=vsource.source Bus1=SourceBus ' + S;  // Load up the parser as if it were read in
+    end
+    else
+    begin
+        DoErrorMsg('MakeNewCircuit',
+            'Cannot create new circuit.',
+            'Max. Circuits Exceeded.' + CRLF +
+            '(Max no. of circuits=' + inttostr(Maxcircuits) + ')', 906);
+    end;
+end;
 
 
-PROCEDURE AppendGlobalResult(Const S:String);
+procedure AppendGlobalResult(const S: String);
 
 // Append a string to Global result, separated by commas
 
-Begin
-    If Length(GlobalResult)=0 Then
+begin
+    if Length(GlobalResult) = 0 then
         GlobalResult := S
-    Else
+    else
         GlobalResult := GlobalResult + ', ' + S;
-End;
+end;
 
 
-
-FUNCTION GetDSSVersion: String;
+function GetDSSVersion: String;
 (* Unlike most of AboutText (below), this takes significant activity at run-    *)
  (* time to extract version/release/build numbers from resource information      *)
  (* appended to the binary.                                                      *)
 
- VAR     Stream: TResourceStream;
-         vr: TVersionResource;
-         fi: TVersionFixedInfo;
+var
+    Stream: TResourceStream;
+    vr: TVersionResource;
+    fi: TVersionFixedInfo;
 
- BEGIN
-   RESULT:= 'Unknown.';
-   TRY
+begin
+    RESULT := 'Unknown.';
+    try
 
  (* This raises an exception if version info has not been incorporated into the  *)
  (* binary (Lazarus Project -> Project Options -> Version Info -> Version        *)
  (* numbering).                                                                  *)
 
-     Stream:= TResourceStream.CreateFromID(HINSTANCE, 1, PChar(RT_VERSION));
-     TRY
-       vr:= TVersionResource.Create;
-       TRY
-         vr.SetCustomRawDataStream(Stream);
-         fi:= vr.FixedInfo;
-         RESULT := 'Version ' + IntToStr(fi.FileVersion[0]) + '.' + IntToStr(fi.FileVersion[1]) +
-                ' release ' + IntToStr(fi.FileVersion[2]) + ' build ' + IntToStr(fi.FileVersion[3]) + LineEnding;
-         vr.SetCustomRawDataStream(nil)
-       FINALLY
-         vr.Free
-       END
-     FINALLY
-       Stream.Free
-     END
-   EXCEPT
-   END
- End;
-
-
-PROCEDURE WriteDLLDebugFile(Const S:String);
-
-Begin
-
-        AssignFile(DLLDebugFile, OutputDirectory + 'DSSDLLDebug.TXT');
-        If DLLFirstTime then Begin
-           Rewrite(DLLDebugFile);
-           DLLFirstTime := False;
+        Stream := TResourceStream.CreateFromID(HINSTANCE, 1, Pchar(RT_VERSION));
+        try
+            vr := TVersionResource.Create;
+            try
+                vr.SetCustomRawDataStream(Stream);
+                fi := vr.FixedInfo;
+                RESULT := 'Version ' + IntToStr(fi.FileVersion[0]) + '.' + IntToStr(fi.FileVersion[1]) +
+                    ' release ' + IntToStr(fi.FileVersion[2]) + ' build ' + IntToStr(fi.FileVersion[3]) + LineEnding;
+                vr.SetCustomRawDataStream(NIL)
+            finally
+                vr.Free
+            end
+        finally
+            Stream.Free
         end
-        Else Append( DLLDebugFile);
-        Writeln(DLLDebugFile, S);
-        CloseFile(DLLDebugFile);
+    except
+    end
+end;
 
-End;
+
+procedure WriteDLLDebugFile(const S: String);
+
+begin
+
+    AssignFile(DLLDebugFile, OutputDirectory + 'DSSDLLDebug.TXT');
+    if DLLFirstTime then
+    begin
+        Rewrite(DLLDebugFile);
+        DLLFirstTime := FALSE;
+    end
+    else
+        Append(DLLDebugFile);
+    Writeln(DLLDebugFile, S);
+    CloseFile(DLLDebugFile);
+
+end;
 
 function IsDirectoryWritable(const Dir: String): Boolean;
 var
-  TempFile: array[0..MAX_PATH] of Char;
+    TempFile: array[0..MAX_PATH] of Char;
 begin
-  if GetTempFileName(PChar(Dir), 'DA', 0, TempFile) <> 0 then
-    Result := DeleteFile(TempFile)
-  else
-    Result := False;
+    if GetTempFileName(Pchar(Dir), 'DA', 0, TempFile) <> 0 then
+        Result := DeleteFile(TempFile)
+    else
+        Result := FALSE;
 end;
 
-PROCEDURE SetDataPath(const PathName:String);
+procedure SetDataPath(const PathName: String);
 var
-  ScratchPath: String;
+    ScratchPath: String;
 // Pathname may be null
-BEGIN
-  if (Length(PathName) > 0) and not DirectoryExists(PathName) then Begin
+begin
+    if (Length(PathName) > 0) and not DirectoryExists(PathName) then
+    begin
   // Try to create the directory
-    if not CreateDir(PathName) then Begin
-      DosimpleMsg('Cannot create ' + PathName + ' directory.', 907);
-      Exit;
-    End;
-  End;
+        if not CreateDir(PathName) then
+        begin
+            DosimpleMsg('Cannot create ' + PathName + ' directory.', 907);
+            Exit;
+        end;
+    end;
 
-  DataDirectory := PathName;
+    DataDirectory := PathName;
 
   // Put a \ on the end if not supplied. Allow a null specification.
-  If Length(DataDirectory) > 0 Then Begin
-    ChDir(DataDirectory);   // Change to specified directory
+    if Length(DataDirectory) > 0 then
+    begin
+        ChDir(DataDirectory);   // Change to specified directory
 {$IFDEF WINDOWS}
-    If DataDirectory[Length(DataDirectory)] <> '\' Then DataDirectory := DataDirectory + '\';
+        if DataDirectory[Length(DataDirectory)] <> '\' then
+            DataDirectory := DataDirectory + '\';
 {$ENDIF}
 {$IFDEF UNIX}
-    If DataDirectory[Length(DataDirectory)] <> '/' Then DataDirectory := DataDirectory + '/';
+        if DataDirectory[Length(DataDirectory)] <> '/' then
+            DataDirectory := DataDirectory + '/';
 {$ENDIF}
-  end;
+    end;
 
   // see if DataDirectory is writable. If not, set OutputDirectory to the user's appdata
-  if IsDirectoryWritable(DataDirectory) then begin
-    OutputDirectory := DataDirectory;
-  end else begin
+    if IsDirectoryWritable(DataDirectory) then
+    begin
+        OutputDirectory := DataDirectory;
+    end
+    else
+    begin
 {$IFDEF WINDOWS}
-    ScratchPath := GetDefaultScratchDirectory + '\' + ProgramName + '\';
+        ScratchPath := GetDefaultScratchDirectory + '\' + ProgramName + '\';
 {$ENDIF}
 {$IFDEF UNIX}
-    ScratchPath := GetDefaultScratchDirectory + '/' + ProgramName + '/';
+        ScratchPath := GetDefaultScratchDirectory + '/' + ProgramName + '/';
 {$ENDIF}
-    if not DirectoryExists(ScratchPath) then CreateDir(ScratchPath);
-    OutputDirectory := ScratchPath;
-  end;
-END;
+        if not DirectoryExists(ScratchPath) then
+            CreateDir(ScratchPath);
+        OutputDirectory := ScratchPath;
+    end;
+end;
 
-PROCEDURE ReadDSS_Registry;
-Var  TestDataDirectory:string;
-Begin
-  DSS_Registry.Section := 'MainSect';
+procedure ReadDSS_Registry;
+var
+    TestDataDirectory: String;
+begin
+    DSS_Registry.Section := 'MainSect';
   {$IFDEF Darwin}
-     DefaultEditor    := DSS_Registry.ReadString('Editor', 'open -t');
-     DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '12'));
-     DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'Geneva');
+    DefaultEditor := DSS_Registry.ReadString('Editor', 'open -t');
+    DefaultFontSize := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '12'));
+    DefaultFontName := DSS_Registry.ReadString('ScriptFontName', 'Geneva');
   {$ENDIF}
   {$IFDEF Linux}
-     DefaultEditor    := DSS_Registry.ReadString('Editor', 'xdg-open');
-     DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '10'));
-     DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'Arial');
+    DefaultEditor := DSS_Registry.ReadString('Editor', 'xdg-open');
+    DefaultFontSize := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '10'));
+    DefaultFontName := DSS_Registry.ReadString('ScriptFontName', 'Arial');
   {$ENDIF}
   {$IFDEF Windows}
-     DefaultEditor    := DSS_Registry.ReadString('Editor', 'Notepad.exe' );
-     DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8' ));
-     DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif' );
+    DefaultEditor := DSS_Registry.ReadString('Editor', 'Notepad.exe');
+    DefaultFontSize := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8'));
+    DefaultFontName := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif');
   {$ENDIF}
-  DefaultFontStyles := 1; // []; TEMc
+    DefaultFontStyles := 1; // []; TEMc
 //  If DSS_Registry.ReadBool('ScriptFontBold', TRUE)    Then DefaultFontStyles := DefaultFontStyles + [fsbold];
 //  If DSS_Registry.ReadBool('ScriptFontItalic', FALSE) Then DefaultFontStyles := DefaultFontStyles + [fsItalic];
-  DefaultBaseFreq  := StrToInt(DSS_Registry.ReadString('BaseFrequency', '60' ));
-  LastFileCompiled := DSS_Registry.ReadString('LastFile', '' );
-  TestDataDirectory :=   DSS_Registry.ReadString('DataPath', DataDirectory);
-  If SysUtils.DirectoryExists (TestDataDirectory) Then SetDataPath (TestDataDirectory)
-                                        Else SetDataPath (DataDirectory);
-End;
+    DefaultBaseFreq := StrToInt(DSS_Registry.ReadString('BaseFrequency', '60'));
+    LastFileCompiled := DSS_Registry.ReadString('LastFile', '');
+    TestDataDirectory := DSS_Registry.ReadString('DataPath', DataDirectory);
+    if SysUtils.DirectoryExists(TestDataDirectory) then
+        SetDataPath(TestDataDirectory)
+    else
+        SetDataPath(DataDirectory);
+end;
 
 
-PROCEDURE WriteDSS_Registry;
-Begin
-  If UpdateRegistry Then  Begin
-      DSS_Registry.Section := 'MainSect';
-      DSS_Registry.WriteString('Editor',        DefaultEditor);
-      DSS_Registry.WriteString('ScriptFontSize', Format('%d',[DefaultFontSize]));
-      DSS_Registry.WriteString('ScriptFontName', Format('%s',[DefaultFontName]));
-      DSS_Registry.WriteBool('ScriptFontBold', False); // (fsBold in DefaultFontStyles));  TEMc
-      DSS_Registry.WriteBool('ScriptFontItalic', False); // (fsItalic in DefaultFontStyles));  TEMc
-      DSS_Registry.WriteString('BaseFrequency', Format('%d',[Round(DefaultBaseFreq)]));
-      DSS_Registry.WriteString('LastFile',      LastFileCompiled);
-      DSS_Registry.WriteString('DataPath', DataDirectory);
-  End;
-End;
+procedure WriteDSS_Registry;
+begin
+    if UpdateRegistry then
+    begin
+        DSS_Registry.Section := 'MainSect';
+        DSS_Registry.WriteString('Editor', DefaultEditor);
+        DSS_Registry.WriteString('ScriptFontSize', Format('%d', [DefaultFontSize]));
+        DSS_Registry.WriteString('ScriptFontName', Format('%s', [DefaultFontName]));
+        DSS_Registry.WriteBool('ScriptFontBold', FALSE); // (fsBold in DefaultFontStyles));  TEMc
+        DSS_Registry.WriteBool('ScriptFontItalic', FALSE); // (fsItalic in DefaultFontStyles));  TEMc
+        DSS_Registry.WriteString('BaseFrequency', Format('%d', [Round(DefaultBaseFreq)]));
+        DSS_Registry.WriteString('LastFile', LastFileCompiled);
+        DSS_Registry.WriteString('DataPath', DataDirectory);
+    end;
+end;
 
-PROCEDURE ResetQueryLogFile;
-Begin
-     QueryFirstTime := TRUE;
-End;
+procedure ResetQueryLogFile;
+begin
+    QueryFirstTime := TRUE;
+end;
 
 
-PROCEDURE WriteQueryLogfile(Const Prop, S:String);
+procedure WriteQueryLogfile(const Prop, S: String);
 
 {Log file is written after a query command if LogQueries is true.}
 
-Begin
+begin
 
-  TRY
-        QueryLogFileName :=  OutputDirectory + 'QueryLog.CSV';
+    try
+        QueryLogFileName := OutputDirectory + 'QueryLog.CSV';
         AssignFile(QueryLogFile, QueryLogFileName);
-        If QueryFirstTime then
-        Begin
-             Rewrite(QueryLogFile);  // clear the file
-             Writeln(QueryLogFile, 'Time(h), Property, Result');
-             QueryFirstTime := False;
+        if QueryFirstTime then
+        begin
+            Rewrite(QueryLogFile);  // clear the file
+            Writeln(QueryLogFile, 'Time(h), Property, Result');
+            QueryFirstTime := FALSE;
         end
-        Else Append( QueryLogFile);
+        else
+            Append(QueryLogFile);
 
-        Writeln(QueryLogFile,Format('%.10g, %s, %s',[ActiveCircuit.Solution.DynaVars.dblHour, Prop, S]));
+        Writeln(QueryLogFile, Format('%.10g, %s, %s', [ActiveCircuit.Solution.DynaVars.dblHour, Prop, S]));
         CloseFile(QueryLogFile);
-  EXCEPT
-        On E:Exception Do DoSimpleMsg('Error writing Query Log file: ' + E.Message, 908);
-  END;
+    except
+        On E: Exception do
+            DoSimpleMsg('Error writing Query Log file: ' + E.Message, 908);
+    end;
 
-End;
+end;
 
-PROCEDURE SetLastResultFile(Const Fname:String);
+procedure SetLastResultFile(const Fname: String);
 
-Begin
-      LastResultfile := Fname;
-      ParserVars.Add('@lastfile', Fname);
-End;
+begin
+    LastResultfile := Fname;
+    ParserVars.Add('@lastfile', Fname);
+end;
 
-Function MyAllocMem(nbytes:Cardinal):Pointer;
-Begin
+function MyAllocMem(nbytes: Cardinal): Pointer;
+begin
     Result := AllocMem(Nbytes);
-    WriteDLLDebugFile(Format('Allocating %d bytes @ %p',[nbytes, Result]));
-End;
+    WriteDLLDebugFile(Format('Allocating %d bytes @ %p', [nbytes, Result]));
+end;
 
-Procedure MyReallocMem(Var p:Pointer; newsize:Integer);
+procedure MyReallocMem(var p: Pointer; newsize: Integer);
 
-Begin
-     WriteDLLDebugFile(Format('Reallocating @ %p, new size= %d', [p, newsize]));
-     ReallocMem(p, newsize);
-End;
+begin
+    WriteDLLDebugFile(Format('Reallocating @ %p, new size= %d', [p, newsize]));
+    ReallocMem(p, newsize);
+end;
 
 initialization
 
    // LCL can't show any forms until after Application.Initialize
-   NoFormsAllowed  := TRUE;
+    NoFormsAllowed := TRUE;
 
    {Various Constants and Switches}
 
-   CALPHA                := Cmplx(-0.5, -0.866025); // -120 degrees phase shift
-   SQRT2                 := Sqrt(2.0);
-   SQRT3                 := Sqrt(3.0);
-   InvSQRT3              := 1.0/SQRT3;
-   InvSQRT3x1000         := InvSQRT3 * 1000.0;
-   CmdResult             := 0;
-   DIFilesAreOpen        := FALSE;
-   ErrorNumber           := 0;
-   ErrorPending          := FALSE;
-   GlobalHelpString      := '';
-   GlobalPropertyValue   := '';
-   LastResultFile        := '';
-   In_Redirect           := FALSE;
-   InShowResults         := FALSE;
-   IsDLL                 := FALSE;
-   LastCommandWasCompile := FALSE;
-   LastErrorMessage      := '';
-   MaxCircuits           := 1;  //  This version only allows one circuit at a time
-   MaxAllocationIterations := 2;
-   SolutionAbort         := FALSE;
-   AutoShowExport        := FALSE;
-   SolutionWasAttempted  := FALSE;
+    CALPHA := Cmplx(-0.5, -0.866025); // -120 degrees phase shift
+    SQRT2 := Sqrt(2.0);
+    SQRT3 := Sqrt(3.0);
+    InvSQRT3 := 1.0 / SQRT3;
+    InvSQRT3x1000 := InvSQRT3 * 1000.0;
+    CmdResult := 0;
+    DIFilesAreOpen := FALSE;
+    ErrorNumber := 0;
+    ErrorPending := FALSE;
+    GlobalHelpString := '';
+    GlobalPropertyValue := '';
+    LastResultFile := '';
+    In_Redirect := FALSE;
+    InShowResults := FALSE;
+    IsDLL := FALSE;
+    LastCommandWasCompile := FALSE;
+    LastErrorMessage := '';
+    MaxCircuits := 1;  //  This version only allows one circuit at a time
+    MaxAllocationIterations := 2;
+    SolutionAbort := FALSE;
+    AutoShowExport := FALSE;
+    SolutionWasAttempted := FALSE;
 
-   DefaultBaseFreq       := 60.0;
-   DaisySize             := 1.0;
-   DefaultEarthModel     := DERI;
-   ActiveEarthModel      := DefaultEarthModel;
+    DefaultBaseFreq := 60.0;
+    DaisySize := 1.0;
+    DefaultEarthModel := DERI;
+    ActiveEarthModel := DefaultEarthModel;
 
    {Initialize filenames and directories}
 
-   ProgramName      := 'OpenDSS';
-   DSSFileName      := GetDSSExeFile;
-   DSSDirectory     := ExtractFilePath(DSSFileName);
+    ProgramName := 'OpenDSS';
+    DSSFileName := GetDSSExeFile;
+    DSSDirectory := ExtractFilePath(DSSFileName);
    // want to know if this was built for 64-bit, not whether running on 64 bits
    // (i.e. we could have a 32-bit build running on 64 bits; not interested in that
 {$IFDEF CPU64}
-   VersionString    := 'Version ' + GetDSSVersion + ' (64-bit build)';
+    VersionString := 'Version ' + GetDSSVersion + ' (64-bit build)';
 {$ELSE ! CPU32}
-   VersionString    := 'Version ' + GetDSSVersion + ' (32-bit build)';
+    VersionString := 'Version ' + GetDSSVersion + ' (32-bit build)';
 {$ENDIF}
 {$IFDEF WINDOWS}
-        StartupDirectory := GetCurrentDir+'\';
-        SetDataPath (GetDefaultDataDirectory + '\' + ProgramName + '\');
-        DSS_Registry     := TIniRegSave.Create(DataDirectory + 'opendss.ini');
+    StartupDirectory := GetCurrentDir + '\';
+    SetDataPath(GetDefaultDataDirectory + '\' + ProgramName + '\');
+    DSS_Registry := TIniRegSave.Create(DataDirectory + 'opendss.ini');
 {$ENDIF}
 {$IFDEF UNIX}
-        StartupDirectory := GetCurrentDir+'/';
-        SetDataPath (GetDefaultDataDirectory + '/' + ProgramName + '/');
-        DSS_Registry     := TIniRegSave.Create(DataDirectory + 'opendss.ini');
+    StartupDirectory := GetCurrentDir + '/';
+    SetDataPath(GetDefaultDataDirectory + '/' + ProgramName + '/');
+    DSS_Registry := TIniRegSave.Create(DataDirectory + 'opendss.ini');
 {$ENDIF}
 
-   AuxParser       := TParser.Create;
+    AuxParser := TParser.Create;
 {$IFDEF Darwin}
-   DefaultEditor   := 'open -t';
-   DefaultFontSize := 12;
-   DefaultFontName := 'Geneva';
+    DefaultEditor := 'open -t';
+    DefaultFontSize := 12;
+    DefaultFontName := 'Geneva';
 {$ENDIF}
 {$IFDEF Linux}
-   DefaultEditor   := 'xdg-open';
-   DefaultFontSize := 10;
-   DefaultFontName := 'Arial';
+    DefaultEditor := 'xdg-open';
+    DefaultFontSize := 10;
+    DefaultFontName := 'Arial';
 {$ENDIF}
 {$IFDEF Windows}
-   DefaultEditor   := 'NotePad';
-   DefaultFontSize := 8;
-   DefaultFontName := 'MS Sans Serif';
+    DefaultEditor := 'NotePad';
+    DefaultFontSize := 8;
+    DefaultFontName := 'MS Sans Serif';
 {$ENDIF}
 
-   EventStrings    := TStringList.Create;
-   SavedFileList   := TStringList.Create;
+    EventStrings := TStringList.Create;
+    SavedFileList := TStringList.Create;
 
-   LogQueries        := FALSE;
-   QueryLogFileName  := '';
-   UpdateRegistry    := TRUE;
-   CPU_Freq := 1000; // until we can query it
+    LogQueries := FALSE;
+    QueryLogFileName := '';
+    UpdateRegistry := TRUE;
+    CPU_Freq := 1000; // until we can query it
 //   QueryPerformanceFrequency(CPU_Freq);
-   CPU_Cores        :=  CPUCount;
+    CPU_Cores := CPUCount;
 
 
    //WriteDLLDebugFile('DSSGlobals');
 
-Finalization
+finalization
 
   // Dosimplemsg('Enter DSSGlobals Unit Finalization.');
-  Auxparser.Free;
+    Auxparser.Free;
 
-  EventStrings.Free;
-  SavedFileList.Free;
+    EventStrings.Free;
+    SavedFileList.Free;
 
-  With DSSExecutive Do If RecorderOn Then Recorderon := FALSE;
+    with DSSExecutive do
+        if RecorderOn then
+            Recorderon := FALSE;
 
-  DSSExecutive.Free;  {Writes to Registry}
-  DSS_Registry.Free;  {Close Registry}
+    DSSExecutive.Free;  {Writes to Registry}
+    DSS_Registry.Free;  {Close Registry}
 
 
-End.
-
-
+end.

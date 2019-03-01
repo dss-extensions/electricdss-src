@@ -1,4 +1,5 @@
 unit MessageForm;
+
 {
   ----------------------------------------------------------
   Copyright (c) 2008-2015, Electric Power Research Institute, Inc.
@@ -11,20 +12,27 @@ unit MessageForm;
 interface
 
 uses
-  LCLIntf, LCLType, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  RichMemo;
+    LCLIntf,
+    LCLType,
+    SysUtils,
+    Classes,
+    Graphics,
+    Controls,
+    Forms,
+    Dialogs,
+    RichMemo;
 
 type
-  TMessageForm1 = class(TForm)
-    Editor: TRichMemo;
-  private
+    TMessageForm1 = class(TForm)
+        Editor: TRichMemo;
+    PRIVATE
     { Private declarations }
-  public
+    PUBLIC
     { Public declarations }
-  end;
+    end;
 
 var
-  MessageForm1, ResultForm, SummaryForm : TMessageForm1;
+    MessageForm1, ResultForm, SummaryForm: TMessageForm1;
 
 implementation
 
@@ -32,7 +40,7 @@ implementation
 
 
 initialization
-   MessageForm1 := nil;
-   ResultForm   := nil;
-   SummaryForm  := nil;
+    MessageForm1 := NIL;
+    ResultForm := NIL;
+    SummaryForm := NIL;
 end.

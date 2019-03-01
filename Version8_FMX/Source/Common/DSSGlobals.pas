@@ -1,4 +1,5 @@
 unit DSSGlobals;
+
 {
   ----------------------------------------------------------
   Copyright (c) 2008-2015, Electric Power Research Institute, Inc.
@@ -20,223 +21,239 @@ unit DSSGlobals;
 
 interface
 
-Uses Classes, DSSClassDefs, DSSObject, DSSClass, ParserDel, Hashlist, PointerList, PDELement,
-     UComplex, Arraydef, CktElement, Circuit, IniRegSave, {$IFNDEF FPC} Graphics, System.IOUtils,{$ENDIF} inifiles,
+uses
+    Classes,
+    DSSClassDefs,
+    DSSObject,
+    DSSClass,
+    ParserDel,
+    Hashlist,
+    PointerList,
+    PDELement,
+    UComplex,
+    Arraydef,
+    CktElement,
+    Circuit,
+    IniRegSave,
+{$IFNDEF FPC}
+    Graphics,
+    System.IOUtils,
+{$ENDIF}
+    inifiles,
 
      {Some units which have global vars defined here}
-     solution,
-     Spectrum,
-     LoadShape,
-     TempShape,
-     PriceShape,
-     XYCurve,
-     GrowthShape,
-     Monitor,
-     EnergyMeter,
-     Sensor,
-     TCC_Curve,
-     Feeder,
-     WireData,
-     CNData,
-     TSData,
-     LineSpacing,
-     Storage,
-     PVSystem,
-     InvControl,
-     ExpControl,
-     ProgressForm,
-     variants,
-     vcl.dialogs,
-     Strutils,
-     Types,
-     SyncObjs,
-     YMatrix;
+    solution,
+    Spectrum,
+    LoadShape,
+    TempShape,
+    PriceShape,
+    XYCurve,
+    GrowthShape,
+    Monitor,
+    EnergyMeter,
+    Sensor,
+    TCC_Curve,
+    Feeder,
+    WireData,
+    CNData,
+    TSData,
+    LineSpacing,
+    Storage,
+    PVSystem,
+    InvControl,
+    ExpControl,
+    ProgressForm,
+    variants,
+    vcl.dialogs,
+    Strutils,
+    Types,
+    SyncObjs,
+    YMatrix;
 
+const
+    CRLF = #13#10;
 
-CONST
-      CRLF = #13#10;
+    PI = 3.14159265359;
 
-      PI =  3.14159265359;
+    TwoPi = 2.0 * PI;
 
-      TwoPi = 2.0 * PI;
+    RadiansToDegrees = 57.29577951;
 
-      RadiansToDegrees = 57.29577951;
+    EPSILON = 1.0e-12;   // Default tiny floating point
+    EPSILON2 = 1.0e-3;   // Default for Real number mismatch testing
 
-      EPSILON = 1.0e-12;   // Default tiny floating point
-      EPSILON2 = 1.0e-3;   // Default for Real number mismatch testing
-
-      POWERFLOW  = 1;  // Load model types for solution
-      ADMITTANCE = 2;
+    POWERFLOW = 1;  // Load model types for solution
+    ADMITTANCE = 2;
 
       // For YPrim matrices
-      ALL_YPRIM = 0;
-      SERIES = 1;
-      SHUNT  = 2;
+    ALL_YPRIM = 0;
+    SERIES = 1;
+    SHUNT = 2;
 
       {Control Modes}
-      CONTROLSOFF = -1;
-      EVENTDRIVEN =  1;
-      TIMEDRIVEN  =  2;
-      MULTIRATE   =  3;
-      CTRLSTATIC  =  0;
+    CONTROLSOFF = -1;
+    EVENTDRIVEN = 1;
+    TIMEDRIVEN = 2;
+    MULTIRATE = 3;
+    CTRLSTATIC = 0;
 
       {Randomization Constants}
-      GAUSSIAN  = 1;
-      UNIFORM   = 2;
-      LOGNORMAL = 3;
+    GAUSSIAN = 1;
+    UNIFORM = 2;
+    LOGNORMAL = 3;
 
       {Autoadd Constants}
-      GENADD = 1;
-      CAPADD = 2;
+    GENADD = 1;
+    CAPADD = 2;
 
       {ERRORS}
-      SOLUTION_ABORT = 99;
+    SOLUTION_ABORT = 99;
 
       {For General Sequential Time Simulations}
-      USEDAILY  = 0;
-      USEYEARLY = 1;
-      USEDUTY   = 2;
-      USENONE   =-1;
+    USEDAILY = 0;
+    USEYEARLY = 1;
+    USEDUTY = 2;
+    USENONE = -1;
 
       {Earth Model}
-      SIMPLECARSON  = 1;
-      FULLCARSON    = 2;
-      DERI          = 3;
+    SIMPLECARSON = 1;
+    FULLCARSON = 2;
+    DERI = 3;
 
       {Profile Plot Constants}
-      PROFILE3PH = 9999; // some big number > likely no. of phases
-      PROFILEALL = 9998;
-      PROFILEALLPRI = 9997;
-      PROFILELLALL = 9996;
-      PROFILELLPRI = 9995;
-      PROFILELL    = 9994;
-      PROFILEPUKM = 9993;  // not mutually exclusive to the other choices 9999..9994
-      PROFILE120KFT = 9992;  // not mutually exclusive to the other choices 9999..9994
+    PROFILE3PH = 9999; // some big number > likely no. of phases
+    PROFILEALL = 9998;
+    PROFILEALLPRI = 9997;
+    PROFILELLALL = 9996;
+    PROFILELLPRI = 9995;
+    PROFILELL = 9994;
+    PROFILEPUKM = 9993;  // not mutually exclusive to the other choices 9999..9994
+    PROFILE120KFT = 9992;  // not mutually exclusive to the other choices 9999..9994
 
-VAR
+var
 
-   DLLFirstTime   :Boolean=TRUE;
-   DLLDebugFile   :TextFile;
-   ProgramName    :String;
-   DSS_Registry   :TIniRegSave; // Registry   (See Executive)
+    DLLFirstTime: Boolean = TRUE;
+    DLLDebugFile: TextFile;
+    ProgramName: String;
+    DSS_Registry: TIniRegSave; // Registry   (See Executive)
 
    // Global variables for the DSS visualization tool
-   DSS_Viz_installed   :Boolean=False; // DSS visualization tool (flag of existance)
-   DSS_Viz_path: String;
-   DSS_Viz_enable: Boolean=False;
-   
-   IsDLL,
-   NoFormsAllowed  :Boolean;
+    DSS_Viz_installed: Boolean = FALSE; // DSS visualization tool (flag of existance)
+    DSS_Viz_path: String;
+    DSS_Viz_enable: Boolean = FALSE;
 
-   ActiveCircuit   :Array of TDSSCircuit;
-   ActiveDSSClass  :Array of TDSSClass;
-   LastClassReferenced:Array of Integer;  // index of class of last thing edited
-   ActiveDSSObject :Array of TDSSObject;
-   MaxCircuits     :Integer;
-   MaxBusLimit     :Integer; // Set in Validation
-   MaxAllocationIterations :Integer;
-   Circuits        :TPointerList;
-   DSSObjs         :Array of TPointerList;
+    IsDLL,
+    NoFormsAllowed: Boolean;
 
-   AuxParser       :TParser;  // Auxiliary parser for use by anybody for reparsing values
+    ActiveCircuit: array of TDSSCircuit;
+    ActiveDSSClass: array of TDSSClass;
+    LastClassReferenced: array of Integer;  // index of class of last thing edited
+    ActiveDSSObject: array of TDSSObject;
+    MaxCircuits: Integer;
+    MaxBusLimit: Integer; // Set in Validation
+    MaxAllocationIterations: Integer;
+    Circuits: TPointerList;
+    DSSObjs: array of TPointerList;
+
+    AuxParser: TParser;  // Auxiliary parser for use by anybody for reparsing values
 
 //{****} DebugTrace:TextFile;
 
 
-   ErrorPending       :Boolean;
-   CmdResult,
-   ErrorNumber        :Integer;
-   LastErrorMessage   :String;
+    ErrorPending: Boolean;
+    CmdResult,
+    ErrorNumber: Integer;
+    LastErrorMessage: String;
 
-   DefaultEarthModel  :Integer;
-   ActiveEarthModel   :Array of Integer;
+    DefaultEarthModel: Integer;
+    ActiveEarthModel: array of Integer;
 
-   LastFileCompiled   :String;
-   LastCommandWasCompile :Boolean;
+    LastFileCompiled: String;
+    LastCommandWasCompile: Boolean;
 
-   CALPHA             :Complex;  {120-degree shift constant}
-   SQRT2              :Double;
-   SQRT3              :Double;
-   InvSQRT3           :Double;
-   InvSQRT3x1000      :Double;
-   SolutionAbort      :Boolean;
-   InShowResults      :Boolean;
-   Redirect_Abort     :Boolean;
-   In_Redirect        :Boolean;
-   DIFilesAreOpen     :array of Boolean;
-   AutoShowExport     :Boolean;
-   SolutionWasAttempted : Array of Boolean;
+    CALPHA: Complex;  {120-degree shift constant}
+    SQRT2: Double;
+    SQRT3: Double;
+    InvSQRT3: Double;
+    InvSQRT3x1000: Double;
+    SolutionAbort: Boolean;
+    InShowResults: Boolean;
+    Redirect_Abort: Boolean;
+    In_Redirect: Boolean;
+    DIFilesAreOpen: array of Boolean;
+    AutoShowExport: Boolean;
+    SolutionWasAttempted: array of Boolean;
 
-   GlobalHelpString   :String;
-   GlobalPropertyValue:String;
-   GlobalResult       :String;
-   LastResultFile     :String;
-   VersionString      :String;
+    GlobalHelpString: String;
+    GlobalPropertyValue: String;
+    GlobalResult: String;
+    LastResultFile: String;
+    VersionString: String;
 
-   LogQueries         :Boolean;
-   QueryFirstTime     :Boolean;
-   QueryLogFileName   :String;
-   QueryLogFile       :TextFile;
+    LogQueries: Boolean;
+    QueryFirstTime: Boolean;
+    QueryLogFileName: String;
+    QueryLogFile: TextFile;
 
-   DefaultEditor    :String;     // normally, Notepad
-   DefaultFontSize  :Integer;
-   DefaultFontName  :String;
-   DefaultFontStyles :TFontStyles;
-   DSSFileName      :String;     // Name of current exe or DLL
-   DSSDirectory     :String;     // where the current exe resides
-   StartupDirectory :String;     // Where we started
-   DataDirectory    :array of String;     // used to be DSSDataDirectory
-   OutputDirectory  :array of String;     // output files go here, same as DataDirectory if writable
-   CircuitName_     :array of String;     // Name of Circuit with a "_" appended
-   ActiveYPrim      :Array of pComplexArray; // Created to solve the problems
+    DefaultEditor: String;     // normally, Notepad
+    DefaultFontSize: Integer;
+    DefaultFontName: String;
+    DefaultFontStyles: TFontStyles;
+    DSSFileName: String;     // Name of current exe or DLL
+    DSSDirectory: String;     // where the current exe resides
+    StartupDirectory: String;     // Where we started
+    DataDirectory: array of String;     // used to be DSSDataDirectory
+    OutputDirectory: array of String;     // output files go here, same as DataDirectory if writable
+    CircuitName_: array of String;     // Name of Circuit with a "_" appended
+    ActiveYPrim: array of pComplexArray; // Created to solve the problems
 
-   DefaultBaseFreq  :Double;
-   DaisySize        :Double;
+    DefaultBaseFreq: Double;
+    DaisySize: Double;
 
    // Some commonly used classes   so we can find them easily
-   LoadShapeClass     :Array of TLoadShape;
-   TShapeClass        :Array of TTshape;
-   PriceShapeClass    :Array of TPriceShape;
-   XYCurveClass       :Array of TXYCurve;
-   GrowthShapeClass   :Array of TGrowthShape;
-   SpectrumClass      :Array of TSpectrum;
-   SolutionClass      :Array of TDSSClass;
-   EnergyMeterClass   :Array of TEnergyMeter;
+    LoadShapeClass: array of TLoadShape;
+    TShapeClass: array of TTshape;
+    PriceShapeClass: array of TPriceShape;
+    XYCurveClass: array of TXYCurve;
+    GrowthShapeClass: array of TGrowthShape;
+    SpectrumClass: array of TSpectrum;
+    SolutionClass: array of TDSSClass;
+    EnergyMeterClass: array of TEnergyMeter;
    // FeederClass        :TFeeder;
-   MonitorClass       :Array of TDSSMonitor;
-   SensorClass        :Array of TSensor;
-   TCC_CurveClass     :Array of TTCC_Curve;
-   WireDataClass      :Array of TWireData;
-   CNDataClass        :Array of TCNData;
-   TSDataClass        :Array of TTSData;
-   LineSpacingClass   :Array of TLineSpacing;
-   StorageClass       :Array of TStorage;
-   PVSystemClass      :Array of TPVSystem;
-   InvControlClass    :Array of TInvControl;
-   ExpControlClass    :Array of TExpControl;
+    MonitorClass: array of TDSSMonitor;
+    SensorClass: array of TSensor;
+    TCC_CurveClass: array of TTCC_Curve;
+    WireDataClass: array of TWireData;
+    CNDataClass: array of TCNData;
+    TSDataClass: array of TTSData;
+    LineSpacingClass: array of TLineSpacing;
+    StorageClass: array of TStorage;
+    PVSystemClass: array of TPVSystem;
+    InvControlClass: array of TInvControl;
+    ExpControlClass: array of TExpControl;
 
-   EventStrings       :Array of TStringList;
-   SavedFileList      :Array of TStringList;
-   ErrorStrings       :Array of TStringList;
+    EventStrings: array of TStringList;
+    SavedFileList: array of TStringList;
+    ErrorStrings: array of TStringList;
 
-   DSSClassList       :Array of TPointerList; // pointers to the base class types
-   ClassNames         :Array of THashList;
+    DSSClassList: array of TPointerList; // pointers to the base class types
+    ClassNames: array of THashList;
 
-   UpdateRegistry     :Boolean;  // update on program exit
-   CPU_Freq           : int64;          // Used to store the CPU frequency
-   CPU_Cores          : integer;
-   ActiveActor        : integer;
-   NumOfActors        : integer;
-   ActorCPU           : Array of integer;
-   ActorStatus        : Array of integer;
-   ActorProgressCount : Array of integer;
-   ActorProgress      : Array of TProgress;
-   ActorPctProgress   : Array of integer;
-   ActorHandle        : Array of TSolver;
-   Parallel_enabled   : Boolean;
-   ConcatenateReports : Boolean;
-   IncMat_Ordered     : Boolean;
-   Parser             : Array of TParser;
+    UpdateRegistry: Boolean;  // update on program exit
+    CPU_Freq: Int64;          // Used to store the CPU frequency
+    CPU_Cores: Integer;
+    ActiveActor: Integer;
+    NumOfActors: Integer;
+    ActorCPU: array of Integer;
+    ActorStatus: array of Integer;
+    ActorProgressCount: array of Integer;
+    ActorProgress: array of TProgress;
+    ActorPctProgress: array of Integer;
+    ActorHandle: array of TSolver;
+    Parallel_enabled: Boolean;
+    ConcatenateReports: Boolean;
+    IncMat_Ordered: Boolean;
+    Parser: array of TParser;
 
 {*******************************************************************************
 *    Nomenclature:                                                             *
@@ -253,730 +270,759 @@ VAR
 *     Memory using the MemoryMap_Lib                                           *
 ********************************************************************************
 }
-   OV_MHandle             : array of TBytesStream;  // a. Handle to the file in memory
-   VR_MHandle             : array of TBytesStream;
-   DI_MHandle             : array of TBytesStream;
-   SDI_MHandle            : array of TBytesStream;
-   TDI_MHandle            : array of TBytesStream;
-   SM_MHandle             : array of TBytesStream;
-   EMT_MHandle            : array of TBytesStream;
-   PHV_MHandle            : array of TBytesStream;
-   FM_MHandle             : array of TBytesStream;
+    OV_MHandle: array of TBytesStream;  // a. Handle to the file in memory
+    VR_MHandle: array of TBytesStream;
+    DI_MHandle: array of TBytesStream;
+    SDI_MHandle: array of TBytesStream;
+    TDI_MHandle: array of TBytesStream;
+    SM_MHandle: array of TBytesStream;
+    EMT_MHandle: array of TBytesStream;
+    PHV_MHandle: array of TBytesStream;
+    FM_MHandle: array of TBytesStream;
 
 //*********** Flags for appending Files*****************************************
-   OV_Append              : array of Boolean;
-   VR_Append              : array of Boolean;
-   DI_Append              : array of Boolean;
-   SDI_Append             : array of Boolean;
-   TDI_Append             : array of Boolean;
-   SM_Append              : array of Boolean;
-   EMT_Append             : array of Boolean;
-   PHV_Append             : array of Boolean;
-   FM_Append              : array of Boolean;
+    OV_Append: array of Boolean;
+    VR_Append: array of Boolean;
+    DI_Append: array of Boolean;
+    SDI_Append: array of Boolean;
+    TDI_Append: array of Boolean;
+    SM_Append: array of Boolean;
+    EMT_Append: array of Boolean;
+    PHV_Append: array of Boolean;
+    FM_Append: array of Boolean;
 
 
+procedure DoErrorMsg(const S, Emsg, ProbCause: String; ErrNum: Integer);
+procedure DoSimpleMsg(const S: String; ErrNum: Integer);
 
-PROCEDURE DoErrorMsg(Const S, Emsg, ProbCause :String; ErrNum:Integer);
-PROCEDURE DoSimpleMsg(Const S :String; ErrNum:Integer);
+procedure ClearAllCircuits;
 
-PROCEDURE ClearAllCircuits;
+procedure SetObject(const param: String);
+function SetActiveBus(const BusName: String): Integer;
+procedure SetDataPath(const PathName: String);
 
-PROCEDURE SetObject(const param :string);
-FUNCTION  SetActiveBus(const BusName:String):Integer;
-PROCEDURE SetDataPath(const PathName:String);
+procedure SetLastResultFile(const Fname: String);
 
-PROCEDURE SetLastResultFile(Const Fname:String);
+procedure MakeNewCircuit(const Name: String);
 
-PROCEDURE MakeNewCircuit(Const Name:String);
+procedure AppendGlobalResult(const s: String);
+procedure AppendGlobalResultCRLF(const S: String);  // Separate by CRLF
 
-PROCEDURE AppendGlobalResult(Const s:String);
-PROCEDURE AppendGlobalResultCRLF(const S:String);  // Separate by CRLF
+procedure ResetQueryLogFile;
+procedure WriteQueryLogFile(const Prop, S: String);
 
-PROCEDURE ResetQueryLogFile;
-PROCEDURE WriteQueryLogFile(Const Prop, S:String);
+procedure WriteDLLDebugFile(const S: String);
 
-PROCEDURE WriteDLLDebugFile(Const S:String);
+procedure ReadDSS_Registry;
+procedure WriteDSS_Registry;
 
-PROCEDURE ReadDSS_Registry;
-PROCEDURE WriteDSS_Registry;
+function IsDSSDLL(Fname: String): Boolean;
 
-FUNCTION IsDSSDLL(Fname:String):Boolean;
+function GetOutputDirectory: String;
 
-Function GetOutputDirectory:String;
+procedure MyReallocMem(var p: Pointer; newsize: Integer);
+function MyAllocMem(nbytes: Cardinal): Pointer;
 
-Procedure MyReallocMem(Var p:Pointer; newsize:integer);
-Function MyAllocMem(nbytes:Cardinal):Pointer;
-
-procedure New_Actor(ActorID:  Integer);
-procedure Delay(TickTime : Integer);
+procedure New_Actor(ActorID: Integer);
+procedure Delay(TickTime: Integer);
 
 implementation
 
 
+uses {Forms,   Controls,}
+    SysUtils,
+    Windows,
+    DSSForms,
+    SHFolder,
+    ScriptEdit,
+    Executive,
+    Parallel_Lib;
 
-USES  {Forms,   Controls,}
-     SysUtils,
-     Windows,
-     DSSForms,
-     SHFolder,
-     ScriptEdit,
-     Executive,
-     Parallel_Lib;
      {Intrinsic Ckt Elements}
 
-TYPE
+type
 
-   THandle = NativeUint;
+    THandle = NativeUint;
 
-   TDSSRegister = function(var ClassName: pchar):Integer;  // Returns base class 1 or 2 are defined
+    TDSSRegister = function(var ClassName: Pchar): Integer;  // Returns base class 1 or 2 are defined
    // Users can only define circuit elements at present
-VAR
+var
 
-   LastUserDLLHandle: THandle;
-   DSSRegisterProc:TDSSRegister;   // of last library loaded
+    LastUserDLLHandle: THandle;
+    DSSRegisterProc: TDSSRegister;   // of last library loaded
 
-FUNCTION GetDefaultDataDirectory: String;
-Var
-  ThePath:Array[0..MAX_PATH] of char;
-Begin
-  FillChar(ThePath, SizeOF(ThePath), #0);
-  SHGetFolderPath (0, CSIDL_PERSONAL, 0, 0, ThePath);
-  Result := ThePath;
-End;
-
-FUNCTION GetDefaultScratchDirectory: String;
-Var
-  ThePath:Array[0..MAX_PATH] of char;
-Begin
-  FillChar(ThePath, SizeOF(ThePath), #0);
-  SHGetFolderPath (0, CSIDL_LOCAL_APPDATA, 0, 0, ThePath);
-  Result := ThePath;
-End;
-
-function GetOutputDirectory:String;
+function GetDefaultDataDirectory: String;
+var
+    ThePath: array[0..MAX_PATH] of Char;
 begin
-  Result := OutputDirectory[ActiveActor];
+    FillChar(ThePath, SizeOF(ThePath), #0);
+    SHGetFolderPath(0, CSIDL_PERSONAL, 0, 0, ThePath);
+    Result := ThePath;
+end;
+
+function GetDefaultScratchDirectory: String;
+var
+    ThePath: array[0..MAX_PATH] of Char;
+begin
+    FillChar(ThePath, SizeOF(ThePath), #0);
+    SHGetFolderPath(0, CSIDL_LOCAL_APPDATA, 0, 0, ThePath);
+    Result := ThePath;
+end;
+
+function GetOutputDirectory: String;
+begin
+    Result := OutputDirectory[ActiveActor];
 end;
 
 {--------------------------------------------------------------}
-FUNCTION IsDSSDLL(Fname:String):Boolean;
+function IsDSSDLL(Fname: String): Boolean;
 
-Begin
+begin
     Result := FALSE;
 
     // Ignore if "DSSLIB.DLL"
-    If CompareText(ExtractFileName(Fname),'dsslib.dll')=0 Then Exit;
+    if CompareText(ExtractFileName(Fname), 'dsslib.dll') = 0 then
+        Exit;
 
-   LastUserDLLHandle := LoadLibrary(pchar(Fname));
-   IF LastUserDLLHandle <> 0 then BEGIN
+    LastUserDLLHandle := LoadLibrary(Pchar(Fname));
+    if LastUserDLLHandle <> 0 then
+    begin
 
    // Assign the address of the DSSRegister proc to DSSRegisterProc variable
-    @DSSRegisterProc := GetProcAddress(LastUserDLLHandle, 'DSSRegister');
-    IF @DSSRegisterProc <> nil THEN Result := TRUE
-    ELSE FreeLibrary(LastUserDLLHandle);
+        @DSSRegisterProc := GetProcAddress(LastUserDLLHandle, 'DSSRegister');
+        if @DSSRegisterProc <> NIL then
+            Result := TRUE
+        else
+            FreeLibrary(LastUserDLLHandle);
 
-  END;
+    end;
 
-End;
-
-//----------------------------------------------------------------------------
-PROCEDURE DoErrorMsg(Const S, Emsg, ProbCause:String; ErrNum:Integer);
-
-VAR
-    Msg:String;
-    Retval:Integer;
-Begin
-
-     Msg := Format('Error %d Reported From OpenDSS Intrinsic Function: ', [Errnum])+ CRLF  + S
-             + CRLF   + CRLF + 'Error Description: ' + CRLF + Emsg
-             + CRLF   + CRLF + 'Probable Cause: ' + CRLF+ ProbCause;
-
-     If Not NoFormsAllowed Then Begin
-
-         If In_Redirect Then
-         Begin
-           RetVal := DSSMessageDlg(Msg, FALSE);
-           If RetVal = -1 Then Redirect_Abort := True;
-         End
-         Else
-           DSSMessageDlg(Msg, TRUE);
-
-     End;
-
-     LastErrorMessage := Msg;
-     ErrorNumber := ErrNum;
-     AppendGlobalResultCRLF(Msg);
-End;
+end;
 
 //----------------------------------------------------------------------------
-PROCEDURE AppendGlobalResultCRLF(const S:String);
+procedure DoErrorMsg(const S, Emsg, ProbCause: String; ErrNum: Integer);
 
-Begin
-    If Length(GlobalResult) > 0
-    THEN GlobalResult := GlobalResult + CRLF + S
-    ELSE GlobalResult := S;
+var
+    Msg: String;
+    Retval: Integer;
+begin
 
-    ErrorStrings[ActiveActor].Add(Format('(%d) %s' ,[ErrorNumber, S]));  // Add to Error log
-End;
+    Msg := Format('Error %d Reported From OpenDSS Intrinsic Function: ', [Errnum]) + CRLF + S + CRLF + CRLF + 'Error Description: ' + CRLF + Emsg + CRLF + CRLF + 'Probable Cause: ' + CRLF + ProbCause;
 
-//----------------------------------------------------------------------------
-PROCEDURE DoSimpleMsg(Const S:String; ErrNum:Integer);
+    if not NoFormsAllowed then
+    begin
 
-VAR
-    Retval:Integer;
-Begin
+        if In_Redirect then
+        begin
+            RetVal := DSSMessageDlg(Msg, FALSE);
+            if RetVal = -1 then
+                Redirect_Abort := TRUE;
+        end
+        else
+            DSSMessageDlg(Msg, TRUE);
 
-      IF Not NoFormsAllowed Then Begin
-       IF   In_Redirect
-       THEN Begin
-         RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
-         IF   RetVal = -1
-         THEN Redirect_Abort := True;
-       End
-       ELSE
-         DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
-      End;
+    end;
 
-     LastErrorMessage := S;
-     ErrorNumber := ErrNum;
-     AppendGlobalResultCRLF(S);
-End;
-
+    LastErrorMessage := Msg;
+    ErrorNumber := ErrNum;
+    AppendGlobalResultCRLF(Msg);
+end;
 
 //----------------------------------------------------------------------------
-PROCEDURE SetObject(const param :string);
+procedure AppendGlobalResultCRLF(const S: String);
+
+begin
+    if Length(GlobalResult) > 0 then
+        GlobalResult := GlobalResult + CRLF + S
+    else
+        GlobalResult := S;
+
+    ErrorStrings[ActiveActor].Add(Format('(%d) %s', [ErrorNumber, S]));  // Add to Error log
+end;
+
+//----------------------------------------------------------------------------
+procedure DoSimpleMsg(const S: String; ErrNum: Integer);
+
+var
+    Retval: Integer;
+begin
+
+    if not NoFormsAllowed then
+    begin
+        if In_Redirect then
+        begin
+            RetVal := DSSMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]), FALSE);
+            if RetVal = -1 then
+                Redirect_Abort := TRUE;
+        end
+        else
+            DSSInfoMessageDlg(Format('(%d) OpenDSS %s%s', [Errnum, CRLF, S]));
+    end;
+
+    LastErrorMessage := S;
+    ErrorNumber := ErrNum;
+    AppendGlobalResultCRLF(S);
+end;
+
+
+//----------------------------------------------------------------------------
+procedure SetObject(const param: String);
 
 {Set object active by name}
 
-VAR
-   dotpos :Integer;
-   ObjName, ObjClass :String;
+var
+    dotpos: Integer;
+    ObjName, ObjClass: String;
 
-Begin
+begin
 
       // Split off Obj class and name
-      dotpos := Pos('.', Param);
-      CASE dotpos OF
-         0:ObjName := Copy(Param, 1, Length(Param));  // assume it is all name; class defaults
-      ELSE Begin
-           ObjClass := Copy(Param, 1, dotpos-1);
-           ObjName  := Copy(Param, dotpos+1, Length(Param));
-           End;
-      End;
+    dotpos := Pos('.', Param);
+    case dotpos of
+        0:
+            ObjName := Copy(Param, 1, Length(Param));  // assume it is all name; class defaults
+    else
+    begin
+        ObjClass := Copy(Param, 1, dotpos - 1);
+        ObjName := Copy(Param, dotpos + 1, Length(Param));
+    end;
+    end;
 
-      IF Length(ObjClass) > 0 THEN SetObjectClass(ObjClass);
+    if Length(ObjClass) > 0 then
+        SetObjectClass(ObjClass);
 
-      ActiveDSSClass[ActiveActor] := DSSClassList[ActiveActor].Get(LastClassReferenced[ActiveActor]);
-      IF ActiveDSSClass[ActiveActor] <> Nil THEN
-      Begin
-        IF Not ActiveDSSClass[ActiveActor].SetActive(Objname) THEN
-        Begin // scroll through list of objects untill a match
-          DoSimpleMsg('Error! Object "' + ObjName + '" not found.'+ CRLF + parser[ActiveActor].CmdString, 904);
-        End
-        ELSE
-        With ActiveCircuit[ActiveActor] Do
-        Begin
-           CASE ActiveDSSObject[ActiveActor].DSSObjType OF
-                DSS_OBJECT: ;  // do nothing for general DSS object
+    ActiveDSSClass[ActiveActor] := DSSClassList[ActiveActor].Get(LastClassReferenced[ActiveActor]);
+    if ActiveDSSClass[ActiveActor] <> NIL then
+    begin
+        if not ActiveDSSClass[ActiveActor].SetActive(Objname) then
+        begin // scroll through list of objects untill a match
+            DoSimpleMsg('Error! Object "' + ObjName + '" not found.' + CRLF + parser[ActiveActor].CmdString, 904);
+        end
+        else
+            with ActiveCircuit[ActiveActor] do
+            begin
+                case ActiveDSSObject[ActiveActor].DSSObjType of
+                    DSS_OBJECT: ;  // do nothing for general DSS object
 
-           ELSE Begin   // for circuit types, set ActiveCircuit Element, too
-                 ActiveCktElement := ActiveDSSClass[ActiveActor].GetActiveObj;
-                End;
-           End;
-        End;
-      End
-      ELSE
+                else
+                begin   // for circuit types, set ActiveCircuit Element, too
+                    ActiveCktElement := ActiveDSSClass[ActiveActor].GetActiveObj;
+                end;
+                end;
+            end;
+    end
+    else
         DoSimpleMsg('Error! Active object type/class is not set.', 905);
 
-End;
+end;
 
 //----------------------------------------------------------------------------
-FUNCTION SetActiveBus(const BusName:String):Integer;
+function SetActiveBus(const BusName: String): Integer;
 
 
-Begin
+begin
 
    // Now find the bus and set active
-   Result := 0;
+    Result := 0;
 
-   WITH ActiveCircuit[ActiveActor] Do
-     Begin
-        If BusList.ListSize=0 Then Exit;   // Buslist not yet built
+    with ActiveCircuit[ActiveActor] do
+    begin
+        if BusList.ListSize = 0 then
+            Exit;   // Buslist not yet built
         ActiveBusIndex := BusList.Find(BusName);
-        IF   ActiveBusIndex=0 Then
-          Begin
+        if ActiveBusIndex = 0 then
+        begin
             Result := 1;
             AppendGlobalResult('SetActiveBus: Bus ' + BusName + ' Not Found.');
-          End;
-     End;
+        end;
+    end;
 
-End;
+end;
 
-PROCEDURE ClearAllCircuits;
+procedure ClearAllCircuits;
 var
-  I : integer;
-Begin
+    I: Integer;
+begin
 
     for I := 1 to NumOfActors do
     begin
-      if ActiveCircuit[I] <> nil then
-      begin
-        ActiveActor   :=  I;
-        ActiveCircuit[I].NumCircuits := 0;
-        ActiveCircuit[I].Free;
-        ActiveCircuit[I]  :=  nil;
-        Parser[I].Free;
-        Parser[I] :=  nil;
+        if ActiveCircuit[I] <> NIL then
+        begin
+            ActiveActor := I;
+            ActiveCircuit[I].NumCircuits := 0;
+            ActiveCircuit[I].Free;
+            ActiveCircuit[I] := NIL;
+            Parser[I].Free;
+            Parser[I] := NIL;
         // In case the actor hasn't been destroyed
-        if ActorHandle[I] <> nil then
-        Begin
-          ActorHandle[I].Send_Message(EXIT_ACTOR);
-          ActorHandle[I].WaitFor;
-          ActorHandle[I].Free;
-          ActorHandle[I]  :=  nil;
-        End;
-      end;
+            if ActorHandle[I] <> NIL then
+            begin
+                ActorHandle[I].Send_Message(EXIT_ACTOR);
+                ActorHandle[I].WaitFor;
+                ActorHandle[I].Free;
+                ActorHandle[I] := NIL;
+            end;
+        end;
     end;
     Circuits.Free;
     Circuits := TPointerList.Create(4);   // Make a new list of circuits
     // Revert on key global flags to Original States
-    DefaultEarthModel     := DERI;
-    LogQueries            := FALSE;
+    DefaultEarthModel := DERI;
+    LogQueries := FALSE;
     MaxAllocationIterations := 2;
-    ActiveActor           :=  1;
-End;
+    ActiveActor := 1;
+end;
 
 
-
-PROCEDURE MakeNewCircuit(Const Name:String);
+procedure MakeNewCircuit(const Name: String);
 
 //Var
 //   handle :Integer;
-Var
-    S:String;
+var
+    S: String;
 
-Begin
+begin
 
     if ActiveActor <= CPU_Cores then
     begin
-       If ActiveCircuit[ActiveActor] = nil Then
-       Begin
-           ActiveCircuit[ActiveActor] := TDSSCircuit.Create(Name);
-           ActiveDSSObject[ActiveActor]:= ActiveSolutionObj;
+        if ActiveCircuit[ActiveActor] = NIL then
+        begin
+            ActiveCircuit[ActiveActor] := TDSSCircuit.Create(Name);
+            ActiveDSSObject[ActiveActor] := ActiveSolutionObj;
            {*Handle := *}
-           Circuits.Add(ActiveCircuit[ActiveActor]);
-           Inc(ActiveCircuit[ActiveActor].NumCircuits);
-           S                          := Parser[ActiveActor].Remainder;    // Pass remainder of string on to vsource.
+            Circuits.Add(ActiveCircuit[ActiveActor]);
+            Inc(ActiveCircuit[ActiveActor].NumCircuits);
+            S := Parser[ActiveActor].Remainder;    // Pass remainder of string on to vsource.
            {Create a default Circuit}
-           SolutionABort              := FALSE;
+            SolutionABort := FALSE;
            {Voltage source named "source" connected to SourceBus}
-           DSSExecutive.Command       := 'New object=vsource.source Bus1=SourceBus ' + S;  // Load up the parser as if it were read in
+            DSSExecutive.Command := 'New object=vsource.source Bus1=SourceBus ' + S;  // Load up the parser as if it were read in
            // Creates the thread for the actor if not created before
-           If ActorHandle[ActiveActor]  = nil then New_Actor(ActiveActor);
+            if ActorHandle[ActiveActor] = NIL then
+                New_Actor(ActiveActor);
 
 
-       End
-       Else
-       Begin
-           DoErrorMsg('MakeNewCircuit',
-                      'Cannot create new circuit.',
-                      'Max. Circuits Exceeded.'+CRLF+
-                      '(Max no. of circuits='+inttostr(Maxcircuits)+')', 906);
-       End;
+        end
+        else
+        begin
+            DoErrorMsg('MakeNewCircuit',
+                'Cannot create new circuit.',
+                'Max. Circuits Exceeded.' + CRLF +
+                '(Max no. of circuits=' + inttostr(Maxcircuits) + ')', 906);
+        end;
     end
     else
     begin
-           DoErrorMsg('MakeNewCircuit',
-                      'Cannot create new circuit.',
-                      'All the available CPUs have being assigned', 7000);
+        DoErrorMsg('MakeNewCircuit',
+            'Cannot create new circuit.',
+            'All the available CPUs have being assigned', 7000);
 
     end;
-End;
+end;
 
 
-PROCEDURE AppendGlobalResult(Const S:String);
+procedure AppendGlobalResult(const S: String);
 
 // Append a string to Global result, separated by commas
 
-Begin
-    If Length(GlobalResult)=0 Then
+begin
+    if Length(GlobalResult) = 0 then
         GlobalResult := S
-    Else
+    else
         GlobalResult := GlobalResult + ', ' + S;
-End;
+end;
 
 
-
-FUNCTION GetDSSVersion: String;
+function GetDSSVersion: String;
 var
 
-  InfoSize, Wnd: DWORD;
-  VerBuf: Pointer;
-  FI: PVSFixedFileInfo;
-  VerSize: DWORD;
-  MajorVer, MinorVer, BuildNo, RelNo :DWORD;
-  iLastError: DWord;
+    InfoSize, Wnd: DWORD;
+    VerBuf: Pointer;
+    FI: PVSFixedFileInfo;
+    VerSize: DWORD;
+    MajorVer, MinorVer, BuildNo, RelNo: DWORD;
+    iLastError: DWord;
 
-Begin
-    Result := 'Unknown.' ;
+begin
+    Result := 'Unknown.';
 
-    InfoSize := GetFileVersionInfoSize(PChar(DSSFileName), Wnd);
+    InfoSize := GetFileVersionInfoSize(Pchar(DSSFileName), Wnd);
     if InfoSize <> 0 then
     begin
-      GetMem(VerBuf, InfoSize);
-      try
-        if GetFileVersionInfo(PChar(DSSFileName), Wnd, InfoSize, VerBuf) then
-          if VerQueryValue(VerBuf, '\', Pointer(FI), VerSize) then  Begin
-            MinorVer := FI.dwFileVersionMS and $FFFF;
-            MajorVer := (FI.dwFileVersionMS and $FFFF0000) shr 16;
-            BuildNo :=  FI.dwFileVersionLS and $FFFF;
-            RelNo := (FI.dwFileVersionLS and $FFFF0000) shr 16;
-            Result := Format('%d.%d.%d.%d',[MajorVer, MinorVer, RelNo, BuildNo]);
-            End;
-      finally
-        FreeMem(VerBuf);
-      end;
+        GetMem(VerBuf, InfoSize);
+        try
+            if GetFileVersionInfo(Pchar(DSSFileName), Wnd, InfoSize, VerBuf) then
+                if VerQueryValue(VerBuf, '\', Pointer(FI), VerSize) then
+                begin
+                    MinorVer := FI.dwFileVersionMS and $FFFF;
+                    MajorVer := (FI.dwFileVersionMS and $FFFF0000) shr 16;
+                    BuildNo := FI.dwFileVersionLS and $FFFF;
+                    RelNo := (FI.dwFileVersionLS and $FFFF0000) shr 16;
+                    Result := Format('%d.%d.%d.%d', [MajorVer, MinorVer, RelNo, BuildNo]);
+                end;
+        finally
+            FreeMem(VerBuf);
+        end;
     end
     else
     begin
-      iLastError := GetLastError;
-      Result := Format('GetFileVersionInfo failed: (%d) %s',
-               [iLastError, SysErrorMessage(iLastError)]);
+        iLastError := GetLastError;
+        Result := Format('GetFileVersionInfo failed: (%d) %s',
+            [iLastError, SysErrorMessage(iLastError)]);
     end;
 
-End;
+end;
 
 
-PROCEDURE WriteDLLDebugFile(Const S:String);
+procedure WriteDLLDebugFile(const S: String);
 
-Begin
+begin
 
-        AssignFile(DLLDebugFile, OutputDirectory[ActiveActor] + 'DSSDLLDebug.TXT');
-        If DLLFirstTime then Begin
-           Rewrite(DLLDebugFile);
-           DLLFirstTime := False;
-        end
-        Else Append( DLLDebugFile);
-        Writeln(DLLDebugFile, S);
-        CloseFile(DLLDebugFile);
+    AssignFile(DLLDebugFile, OutputDirectory[ActiveActor] + 'DSSDLLDebug.TXT');
+    if DLLFirstTime then
+    begin
+        Rewrite(DLLDebugFile);
+        DLLFirstTime := FALSE;
+    end
+    else
+        Append(DLLDebugFile);
+    Writeln(DLLDebugFile, S);
+    CloseFile(DLLDebugFile);
 
-End;
+end;
 
 function IsDirectoryWritable(const Dir: String): Boolean;
 var
-  TempFile: array[0..MAX_PATH] of Char;
+    TempFile: array[0..MAX_PATH] of Char;
 begin
-  if GetTempFileName(PChar(Dir), 'DA', 0, TempFile) <> 0 then
-    Result := Windows.DeleteFile(TempFile)
-  else
-    Result := False;
+    if GetTempFileName(Pchar(Dir), 'DA', 0, TempFile) <> 0 then
+        Result := Windows.DeleteFile(TempFile)
+    else
+        Result := FALSE;
 end;
 
-PROCEDURE SetDataPath(const PathName:String);
+procedure SetDataPath(const PathName: String);
 var
-  ScratchPath: String;
+    ScratchPath: String;
 // Pathname may be null
-BEGIN
-  if (Length(PathName) > 0) and not DirectoryExists(PathName) then Begin
+begin
+    if (Length(PathName) > 0) and not DirectoryExists(PathName) then
+    begin
   // Try to create the directory
-    if not CreateDir(PathName) then Begin
-      DosimpleMsg('Cannot create ' + PathName + ' directory.', 907);
-      Exit;
-    End;
-  End;
+        if not CreateDir(PathName) then
+        begin
+            DosimpleMsg('Cannot create ' + PathName + ' directory.', 907);
+            Exit;
+        end;
+    end;
 
-  DataDirectory[ActiveActor] := PathName;
+    DataDirectory[ActiveActor] := PathName;
 
   // Put a \ on the end if not supplied. Allow a null specification.
-  If Length(DataDirectory) > 0 Then Begin
-    ChDir(DataDirectory[ActiveActor]);   // Change to specified directory
-    If DataDirectory[ActiveActor][Length(DataDirectory[ActiveActor])] <> '\' Then DataDirectory[ActiveActor] := DataDirectory[ActiveActor] + '\';
-  End;
+    if Length(DataDirectory) > 0 then
+    begin
+        ChDir(DataDirectory[ActiveActor]);   // Change to specified directory
+        if DataDirectory[ActiveActor][Length(DataDirectory[ActiveActor])] <> '\' then
+            DataDirectory[ActiveActor] := DataDirectory[ActiveActor] + '\';
+    end;
 
   // see if DataDirectory is writable. If not, set OutputDirectory to the user's appdata
-  if IsDirectoryWritable(DataDirectory[ActiveActor]) then begin
-    OutputDirectory[ActiveActor] := DataDirectory[ActiveActor];
-  end else begin
-    ScratchPath := GetDefaultScratchDirectory + '\' + ProgramName + '\';
-    if not DirectoryExists(ScratchPath) then CreateDir(ScratchPath);
-    OutputDirectory[ActiveActor] := ScratchPath;
-  end;
-END;
+    if IsDirectoryWritable(DataDirectory[ActiveActor]) then
+    begin
+        OutputDirectory[ActiveActor] := DataDirectory[ActiveActor];
+    end
+    else
+    begin
+        ScratchPath := GetDefaultScratchDirectory + '\' + ProgramName + '\';
+        if not DirectoryExists(ScratchPath) then
+            CreateDir(ScratchPath);
+        OutputDirectory[ActiveActor] := ScratchPath;
+    end;
+end;
 
-PROCEDURE ReadDSS_Registry;
-Var  TestDataDirectory:string;
-Begin
-  DSS_Registry.Section := 'MainSect';
-  DefaultEditor    := DSS_Registry.ReadString('Editor', 'Notepad.exe' );
-  DefaultFontSize  := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8' ));
-  DefaultFontName  := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif' );
-  DefaultFontStyles := [];
-  If DSS_Registry.ReadBool('ScriptFontBold', TRUE)    Then DefaultFontStyles := DefaultFontStyles + [fsbold];
-  If DSS_Registry.ReadBool('ScriptFontItalic', FALSE) Then DefaultFontStyles := DefaultFontStyles + [fsItalic];
-  DefaultBaseFreq  := StrToInt(DSS_Registry.ReadString('BaseFrequency', '60' ));
-  LastFileCompiled := DSS_Registry.ReadString('LastFile', '' );
-  TestDataDirectory :=   DSS_Registry.ReadString('DataPath', DataDirectory[ActiveActor]);
-  If SysUtils.DirectoryExists (TestDataDirectory) Then SetDataPath (TestDataDirectory)
-                                        Else SetDataPath (DataDirectory[ActiveActor]);
-End;
-
-
-PROCEDURE WriteDSS_Registry;
-Begin
-  If UpdateRegistry Then  Begin
-      DSS_Registry.Section := 'MainSect';
-      DSS_Registry.WriteString('Editor',        DefaultEditor);
-      DSS_Registry.WriteString('ScriptFontSize', Format('%d',[DefaultFontSize]));
-      DSS_Registry.WriteString('ScriptFontName', Format('%s',[DefaultFontName]));
-      DSS_Registry.WriteBool('ScriptFontBold',   (fsBold in DefaultFontStyles));
-      DSS_Registry.WriteBool('ScriptFontItalic', (fsItalic in DefaultFontStyles));
-      DSS_Registry.WriteString('BaseFrequency', Format('%d',[Round(DefaultBaseFreq)]));
-      DSS_Registry.WriteString('LastFile',      LastFileCompiled);
-      DSS_Registry.WriteString('DataPath', DataDirectory[ActiveActor]);
-  End;
-End;
-
-PROCEDURE ResetQueryLogFile;
-Begin
-     QueryFirstTime := TRUE;
-End;
+procedure ReadDSS_Registry;
+var
+    TestDataDirectory: String;
+begin
+    DSS_Registry.Section := 'MainSect';
+    DefaultEditor := DSS_Registry.ReadString('Editor', 'Notepad.exe');
+    DefaultFontSize := StrToInt(DSS_Registry.ReadString('ScriptFontSize', '8'));
+    DefaultFontName := DSS_Registry.ReadString('ScriptFontName', 'MS Sans Serif');
+    DefaultFontStyles := [];
+    if DSS_Registry.ReadBool('ScriptFontBold', TRUE) then
+        DefaultFontStyles := DefaultFontStyles + [fsbold];
+    if DSS_Registry.ReadBool('ScriptFontItalic', FALSE) then
+        DefaultFontStyles := DefaultFontStyles + [fsItalic];
+    DefaultBaseFreq := StrToInt(DSS_Registry.ReadString('BaseFrequency', '60'));
+    LastFileCompiled := DSS_Registry.ReadString('LastFile', '');
+    TestDataDirectory := DSS_Registry.ReadString('DataPath', DataDirectory[ActiveActor]);
+    if SysUtils.DirectoryExists(TestDataDirectory) then
+        SetDataPath(TestDataDirectory)
+    else
+        SetDataPath(DataDirectory[ActiveActor]);
+end;
 
 
-PROCEDURE WriteQueryLogfile(Const Prop, S:String);
+procedure WriteDSS_Registry;
+begin
+    if UpdateRegistry then
+    begin
+        DSS_Registry.Section := 'MainSect';
+        DSS_Registry.WriteString('Editor', DefaultEditor);
+        DSS_Registry.WriteString('ScriptFontSize', Format('%d', [DefaultFontSize]));
+        DSS_Registry.WriteString('ScriptFontName', Format('%s', [DefaultFontName]));
+        DSS_Registry.WriteBool('ScriptFontBold', (fsBold in DefaultFontStyles));
+        DSS_Registry.WriteBool('ScriptFontItalic', (fsItalic in DefaultFontStyles));
+        DSS_Registry.WriteString('BaseFrequency', Format('%d', [Round(DefaultBaseFreq)]));
+        DSS_Registry.WriteString('LastFile', LastFileCompiled);
+        DSS_Registry.WriteString('DataPath', DataDirectory[ActiveActor]);
+    end;
+end;
+
+procedure ResetQueryLogFile;
+begin
+    QueryFirstTime := TRUE;
+end;
+
+
+procedure WriteQueryLogfile(const Prop, S: String);
 
 {Log file is written after a query command if LogQueries is true.}
 
-Begin
+begin
 
-  TRY
-        QueryLogFileName :=  OutputDirectory[ActiveActor] + 'QueryLog.CSV';
+    try
+        QueryLogFileName := OutputDirectory[ActiveActor] + 'QueryLog.CSV';
         AssignFile(QueryLogFile, QueryLogFileName);
-        If QueryFirstTime then
-        Begin
-             Rewrite(QueryLogFile);  // clear the file
-             Writeln(QueryLogFile, 'Time(h), Property, Result');
-             QueryFirstTime := False;
+        if QueryFirstTime then
+        begin
+            Rewrite(QueryLogFile);  // clear the file
+            Writeln(QueryLogFile, 'Time(h), Property, Result');
+            QueryFirstTime := FALSE;
         end
-        Else Append( QueryLogFile);
+        else
+            Append(QueryLogFile);
 
-        Writeln(QueryLogFile,Format('%.10g, %s, %s',[ActiveCircuit[ActiveActor].Solution.DynaVars.dblHour, Prop, S]));
+        Writeln(QueryLogFile, Format('%.10g, %s, %s', [ActiveCircuit[ActiveActor].Solution.DynaVars.dblHour, Prop, S]));
         CloseFile(QueryLogFile);
-  EXCEPT
-        On E:Exception Do DoSimpleMsg('Error writing Query Log file: ' + E.Message, 908);
-  END;
+    except
+        On E: Exception do
+            DoSimpleMsg('Error writing Query Log file: ' + E.Message, 908);
+    end;
 
-End;
+end;
 
-PROCEDURE SetLastResultFile(Const Fname:String);
+procedure SetLastResultFile(const Fname: String);
 
-Begin
-      LastResultfile := Fname;
-      ParserVars.Add('@lastfile', Fname);
-End;
+begin
+    LastResultfile := Fname;
+    ParserVars.Add('@lastfile', Fname);
+end;
 
-Function MyAllocMem(nbytes:Cardinal):Pointer;
-Begin
+function MyAllocMem(nbytes: Cardinal): Pointer;
+begin
     Result := AllocMem(Nbytes);
-    WriteDLLDebugFile(Format('Allocating %d bytes @ %p',[nbytes, Result]));
-End;
+    WriteDLLDebugFile(Format('Allocating %d bytes @ %p', [nbytes, Result]));
+end;
 
-Procedure MyReallocMem(Var p:Pointer; newsize:Integer);
+procedure MyReallocMem(var p: Pointer; newsize: Integer);
 
-Begin
-     WriteDLLDebugFile(Format('Reallocating @ %p, new size= %d', [p, newsize]));
-     ReallocMem(p, newsize);
-End;
+begin
+    WriteDLLDebugFile(Format('Reallocating @ %p, new size= %d', [p, newsize]));
+    ReallocMem(p, newsize);
+end;
 
 // Advance visualization tool check
-function GetIni(s,k: string; d: string; f: string=''): string; overload;
+function GetIni(s, k: String; d: String; f: String = ''): String; OVERLOAD;
 var
-  ini: TMemIniFile;
+    ini: TMemIniFile;
 begin
-  Result := d;
-  if f = '' then
-  begin
-    ini := TMemIniFile.Create(lowercase(ChangeFileExt(ParamStr(0),'.ini')));
-  end
-  else
-  begin
-    if not FileExists(f) then Exit;
-    ini := TMemIniFile.Create(f);
-  end;
-  if ini.ReadString(s,k,'') = '' then
-  begin
-    ini.WriteString(s,k,d);
-    ini.UpdateFile;
-  end;
-  Result := ini.ReadString(s,k,d);
-  FreeAndNil(ini);
+    Result := d;
+    if f = '' then
+    begin
+        ini := TMemIniFile.Create(lowercase(ChangeFileExt(ParamStr(0), '.ini')));
+    end
+    else
+    begin
+        if not FileExists(f) then
+            Exit;
+        ini := TMemIniFile.Create(f);
+    end;
+    if ini.ReadString(s, k, '') = '' then
+    begin
+        ini.WriteString(s, k, d);
+        ini.UpdateFile;
+    end;
+    Result := ini.ReadString(s, k, d);
+    FreeAndNil(ini);
 end;
 // Creates a new actor
-procedure New_Actor(ActorID:  Integer);
-Var
-  ScriptEd    : TScriptEdit;
-Begin
-  ActorHandle[ActorID] :=  TSolver.Create(false,ActorCPU[ActorID],ActorID,ScriptEd.UpdateSummaryForm);
-End;
+procedure New_Actor(ActorID: Integer);
+var
+    ScriptEd: TScriptEdit;
+begin
+    ActorHandle[ActorID] := TSolver.Create(FALSE, ActorCPU[ActorID], ActorID, ScriptEd.UpdateSummaryForm);
+end;
 
 {$IFNDEF FPC}
 function CheckDSSVisualizationTool: Boolean;
-var FileName: string;
+var
+    FileName: String;
 begin
-  DSS_Viz_path:=GetIni('Application','path','', TPath.GetHomePath+'\OpenDSS Visualization Tool\settings.ini');
+    DSS_Viz_path := GetIni('Application', 'path', '', TPath.GetHomePath + '\OpenDSS Visualization Tool\settings.ini');
   // to make it compatible with the function
-  FileName  :=  stringreplace(DSS_Viz_path, '\\' ,'\',[rfReplaceAll, rfIgnoreCase]);
-  FileName  :=  stringreplace(FileName, '"' ,'',[rfReplaceAll, rfIgnoreCase]);
+    FileName := stringreplace(DSS_Viz_path, '\\', '\', [rfReplaceAll, rfIgnoreCase]);
+    FileName := stringreplace(FileName, '"', '', [rfReplaceAll, rfIgnoreCase]);
   // returns true only if the executable exists
-  Result:=fileexists(FileName);
+    Result := fileexists(FileName);
 end;
 // End of visualization tool check
 {$ENDIF}
 
-procedure Delay(TickTime : Integer);
- var
- Past: longint;
- begin
- Past := GetTickCount;
- repeat
+procedure Delay(TickTime: Integer);
+var
+    Past: Longint;
+begin
+    Past := GetTickCount;
+    repeat
 
- Until (GetTickCount - Past) >= longint(TickTime);
+    until (GetTickCount - Past) >= Longint(TickTime);
 end;
-
 
 
 initialization
 
 //***************Initialization for Parallel Processing*************************
 
-   CPU_Cores        :=  CPUCount;
+    CPU_Cores := CPUCount;
 
-   setlength(ActiveCircuit,CPU_Cores + 1);
-   setlength(ActorProgress,CPU_Cores + 1);
-   setlength(ActorCPU,CPU_Cores + 1);
-   setlength(ActorProgressCount,CPU_Cores + 1);
-   setlength(ActiveDSSClass,CPU_Cores + 1);
-   setlength(DataDirectory,CPU_Cores + 1);
-   setlength(OutputDirectory,CPU_Cores + 1);
-   setlength(CircuitName_,CPU_Cores + 1);
-   setlength(ActorPctProgress,CPU_Cores + 1);
-   setlength(ActiveDSSObject,CPU_Cores + 1);
-   setlength(LastClassReferenced,CPU_Cores + 1);
-   setlength(DSSObjs,CPU_Cores + 1);
-   setlength(ActiveEarthModel,CPU_Cores + 1);
-   setlength(DSSClassList,CPU_Cores + 1);
-   setlength(ClassNames,CPU_Cores + 1);
-   setlength(MonitorClass,CPU_Cores + 1);
-   setlength(LoadShapeClass,CPU_Cores + 1);
-   setlength(TShapeClass,CPU_Cores + 1);
-   setlength(PriceShapeClass,CPU_Cores + 1);
-   setlength(XYCurveClass,CPU_Cores + 1);
-   setlength(GrowthShapeClass,CPU_Cores + 1);
-   setlength(SpectrumClass,CPU_Cores + 1);
-   setlength(SolutionClass,CPU_Cores + 1);
-   setlength(EnergyMeterClass,CPU_Cores + 1);
-   setlength(SensorClass,CPU_Cores + 1);
-   setlength(TCC_CurveClass,CPU_Cores + 1);
-   setlength(WireDataClass,CPU_Cores + 1);
-   setlength(CNDataClass,CPU_Cores + 1);
-   setlength(TSDataClass,CPU_Cores + 1);
-   setlength(LineSpacingClass,CPU_Cores + 1);
-   setlength(StorageClass,CPU_Cores + 1);
-   setlength(PVSystemClass,CPU_Cores + 1);
-   setlength(InvControlClass,CPU_Cores + 1);
-   setlength(ExpControlClass,CPU_Cores + 1);
-   setlength(EventStrings,CPU_Cores + 1);
-   setlength(SavedFileList,CPU_Cores + 1);
-   setlength(ErrorStrings,CPU_Cores + 1);
-   setlength(ActorHandle,CPU_Cores + 1);
-   setlength(Parser,CPU_Cores + 1);
-   setlength(ActiveYPrim,CPU_Cores + 1);
-   SetLength(SolutionWasAttempted,CPU_Cores + 1);
-   SetLength(ActorStatus,CPU_Cores + 1);
+    setlength(ActiveCircuit, CPU_Cores + 1);
+    setlength(ActorProgress, CPU_Cores + 1);
+    setlength(ActorCPU, CPU_Cores + 1);
+    setlength(ActorProgressCount, CPU_Cores + 1);
+    setlength(ActiveDSSClass, CPU_Cores + 1);
+    setlength(DataDirectory, CPU_Cores + 1);
+    setlength(OutputDirectory, CPU_Cores + 1);
+    setlength(CircuitName_, CPU_Cores + 1);
+    setlength(ActorPctProgress, CPU_Cores + 1);
+    setlength(ActiveDSSObject, CPU_Cores + 1);
+    setlength(LastClassReferenced, CPU_Cores + 1);
+    setlength(DSSObjs, CPU_Cores + 1);
+    setlength(ActiveEarthModel, CPU_Cores + 1);
+    setlength(DSSClassList, CPU_Cores + 1);
+    setlength(ClassNames, CPU_Cores + 1);
+    setlength(MonitorClass, CPU_Cores + 1);
+    setlength(LoadShapeClass, CPU_Cores + 1);
+    setlength(TShapeClass, CPU_Cores + 1);
+    setlength(PriceShapeClass, CPU_Cores + 1);
+    setlength(XYCurveClass, CPU_Cores + 1);
+    setlength(GrowthShapeClass, CPU_Cores + 1);
+    setlength(SpectrumClass, CPU_Cores + 1);
+    setlength(SolutionClass, CPU_Cores + 1);
+    setlength(EnergyMeterClass, CPU_Cores + 1);
+    setlength(SensorClass, CPU_Cores + 1);
+    setlength(TCC_CurveClass, CPU_Cores + 1);
+    setlength(WireDataClass, CPU_Cores + 1);
+    setlength(CNDataClass, CPU_Cores + 1);
+    setlength(TSDataClass, CPU_Cores + 1);
+    setlength(LineSpacingClass, CPU_Cores + 1);
+    setlength(StorageClass, CPU_Cores + 1);
+    setlength(PVSystemClass, CPU_Cores + 1);
+    setlength(InvControlClass, CPU_Cores + 1);
+    setlength(ExpControlClass, CPU_Cores + 1);
+    setlength(EventStrings, CPU_Cores + 1);
+    setlength(SavedFileList, CPU_Cores + 1);
+    setlength(ErrorStrings, CPU_Cores + 1);
+    setlength(ActorHandle, CPU_Cores + 1);
+    setlength(Parser, CPU_Cores + 1);
+    setlength(ActiveYPrim, CPU_Cores + 1);
+    SetLength(SolutionWasAttempted, CPU_Cores + 1);
+    SetLength(ActorStatus, CPU_Cores + 1);
 
    // Init pointer repositories for the EnergyMeter in multiple cores
 
-   SetLength(OV_MHandle,CPU_Cores + 1);
-   SetLength(VR_MHandle,CPU_Cores + 1);
-   SetLength(DI_MHandle,CPU_Cores + 1);
-   SetLength(SDI_MHandle,CPU_Cores + 1);
-   SetLength(TDI_MHandle,CPU_Cores + 1);
-   SetLength(SM_MHandle,CPU_Cores + 1);
-   SetLength(EMT_MHandle,CPU_Cores + 1);
-   SetLength(PHV_MHandle,CPU_Cores + 1);
-   SetLength(FM_MHandle,CPU_Cores + 1);
-   SetLength(OV_Append,CPU_Cores + 1);
-   SetLength(VR_Append,CPU_Cores + 1);
-   SetLength(DI_Append,CPU_Cores + 1);
-   SetLength(SDI_Append,CPU_Cores + 1);
-   SetLength(TDI_Append,CPU_Cores + 1);
-   SetLength(SM_Append,CPU_Cores + 1);
-   SetLength(EMT_Append,CPU_Cores + 1);
-   SetLength(PHV_Append,CPU_Cores + 1);
-   SetLength(FM_Append,CPU_Cores + 1);
-   SetLength(DIFilesAreOpen,CPU_Cores + 1);
+    SetLength(OV_MHandle, CPU_Cores + 1);
+    SetLength(VR_MHandle, CPU_Cores + 1);
+    SetLength(DI_MHandle, CPU_Cores + 1);
+    SetLength(SDI_MHandle, CPU_Cores + 1);
+    SetLength(TDI_MHandle, CPU_Cores + 1);
+    SetLength(SM_MHandle, CPU_Cores + 1);
+    SetLength(EMT_MHandle, CPU_Cores + 1);
+    SetLength(PHV_MHandle, CPU_Cores + 1);
+    SetLength(FM_MHandle, CPU_Cores + 1);
+    SetLength(OV_Append, CPU_Cores + 1);
+    SetLength(VR_Append, CPU_Cores + 1);
+    SetLength(DI_Append, CPU_Cores + 1);
+    SetLength(SDI_Append, CPU_Cores + 1);
+    SetLength(TDI_Append, CPU_Cores + 1);
+    SetLength(SM_Append, CPU_Cores + 1);
+    SetLength(EMT_Append, CPU_Cores + 1);
+    SetLength(PHV_Append, CPU_Cores + 1);
+    SetLength(FM_Append, CPU_Cores + 1);
+    SetLength(DIFilesAreOpen, CPU_Cores + 1);
 
-   for ActiveActor := 1 to CPU_Cores do
-   begin
-    ActiveCircuit[ActiveActor]        :=  nil;
-    ActorProgress[ActiveActor]        :=  nil;
-    ActiveDSSClass[ActiveActor]       :=  nil;
-    EventStrings[ActiveActor]         := TStringList.Create;
-    SavedFileList[ActiveActor]        := TStringList.Create;
-    ErrorStrings[ActiveActor]         := TStringList.Create;
-    ErrorStrings[ActiveActor].Clear;
-    ActorHandle[ActiveActor]          :=  nil;
-    Parser[ActiveActor]               :=  nil;
+    for ActiveActor := 1 to CPU_Cores do
+    begin
+        ActiveCircuit[ActiveActor] := NIL;
+        ActorProgress[ActiveActor] := NIL;
+        ActiveDSSClass[ActiveActor] := NIL;
+        EventStrings[ActiveActor] := TStringList.Create;
+        SavedFileList[ActiveActor] := TStringList.Create;
+        ErrorStrings[ActiveActor] := TStringList.Create;
+        ErrorStrings[ActiveActor].Clear;
+        ActorHandle[ActiveActor] := NIL;
+        Parser[ActiveActor] := NIL;
 
-    OV_MHandle[ActiveActor]           :=  nil;
-    VR_MHandle[ActiveActor]           :=  nil;
-    DI_MHandle[ActiveActor]           :=  nil;
-    SDI_MHandle[ActiveActor]          :=  nil;
-    TDI_MHandle[ActiveActor]          :=  nil;
-    SM_MHandle[ActiveActor]           :=  nil;
-    EMT_MHandle[ActiveActor]          :=  nil;
-    PHV_MHandle[ActiveActor]          :=  nil;
-    FM_MHandle[ActiveActor]           :=  nil;
-    DIFilesAreOpen[ActiveActor]       :=  FALSE;
-   end;
-   ActiveActor            :=  1;
-   NumOfActors            :=  1;
-   ActorCPU[ActiveActor]  :=  0;
-   Parser[ActiveActor]    :=  Tparser.Create;
-   ProgramName      := 'OpenDSS';
-   DSSFileName      := GetDSSExeFile;
-   DSSDirectory     := ExtractFilePath(DSSFileName);
+        OV_MHandle[ActiveActor] := NIL;
+        VR_MHandle[ActiveActor] := NIL;
+        DI_MHandle[ActiveActor] := NIL;
+        SDI_MHandle[ActiveActor] := NIL;
+        TDI_MHandle[ActiveActor] := NIL;
+        SM_MHandle[ActiveActor] := NIL;
+        EMT_MHandle[ActiveActor] := NIL;
+        PHV_MHandle[ActiveActor] := NIL;
+        FM_MHandle[ActiveActor] := NIL;
+        DIFilesAreOpen[ActiveActor] := FALSE;
+    end;
+    ActiveActor := 1;
+    NumOfActors := 1;
+    ActorCPU[ActiveActor] := 0;
+    Parser[ActiveActor] := Tparser.Create;
+    ProgramName := 'OpenDSS';
+    DSSFileName := GetDSSExeFile;
+    DSSDirectory := ExtractFilePath(DSSFileName);
 
    {Various Constants and Switches}
 
-   CALPHA                := Cmplx(-0.5, -0.866025); // -120 degrees phase shift
-   SQRT2                 := Sqrt(2.0);
-   SQRT3                 := Sqrt(3.0);
-   InvSQRT3              := 1.0/SQRT3;
-   InvSQRT3x1000         := InvSQRT3 * 1000.0;
-   CmdResult             := 0;
+    CALPHA := Cmplx(-0.5, -0.866025); // -120 degrees phase shift
+    SQRT2 := Sqrt(2.0);
+    SQRT3 := Sqrt(3.0);
+    InvSQRT3 := 1.0 / SQRT3;
+    InvSQRT3x1000 := InvSQRT3 * 1000.0;
+    CmdResult := 0;
    //DIFilesAreOpen        := FALSE;
-   ErrorNumber           := 0;
-   ErrorPending          := FALSE;
-   GlobalHelpString      := '';
-   GlobalPropertyValue   := '';
-   LastResultFile        := '';
-   In_Redirect           := FALSE;
-   InShowResults         := FALSE;
-   IsDLL                 := FALSE;
-   LastCommandWasCompile := FALSE;
-   LastErrorMessage      := '';
-   MaxCircuits           := 1;  //  Not required anymore. planning to remove it
-   MaxAllocationIterations := 2;
-   SolutionAbort         := FALSE;
-   AutoShowExport        := FALSE;
-   SolutionWasAttempted[ActiveActor]  := FALSE;
+    ErrorNumber := 0;
+    ErrorPending := FALSE;
+    GlobalHelpString := '';
+    GlobalPropertyValue := '';
+    LastResultFile := '';
+    In_Redirect := FALSE;
+    InShowResults := FALSE;
+    IsDLL := FALSE;
+    LastCommandWasCompile := FALSE;
+    LastErrorMessage := '';
+    MaxCircuits := 1;  //  Not required anymore. planning to remove it
+    MaxAllocationIterations := 2;
+    SolutionAbort := FALSE;
+    AutoShowExport := FALSE;
+    SolutionWasAttempted[ActiveActor] := FALSE;
 
-   DefaultBaseFreq       := 60.0;
-   DaisySize             := 1.0;
-   DefaultEarthModel     := DERI;
-   ActiveEarthModel[ActiveActor]      := DefaultEarthModel;
-   Parallel_enabled      :=  False;
-   ConcatenateReports    :=  False;
+    DefaultBaseFreq := 60.0;
+    DaisySize := 1.0;
+    DefaultEarthModel := DERI;
+    ActiveEarthModel[ActiveActor] := DefaultEarthModel;
+    Parallel_enabled := FALSE;
+    ConcatenateReports := FALSE;
 
 
    {Initialize filenames and directories}
@@ -985,49 +1031,51 @@ initialization
    // want to know if this was built for 64-bit, not whether running on 64 bits
    // (i.e. we could have a 32-bit build running on 64 bits; not interested in that
 {$IFDEF CPUX64}
-   VersionString    := 'Version ' + GetDSSVersion + ' (64-bit build)';
+    VersionString := 'Version ' + GetDSSVersion + ' (64-bit build)';
 {$ELSE ! CPUX86}
-   VersionString    := 'Version ' + GetDSSVersion + ' (32-bit build)';
+    VersionString := 'Version ' + GetDSSVersion + ' (32-bit build)';
 {$ENDIF}
-   StartupDirectory := GetCurrentDir+'\';
-   SetDataPath (GetDefaultDataDirectory + '\' + ProgramName + '\');
+    StartupDirectory := GetCurrentDir + '\';
+    SetDataPath(GetDefaultDataDirectory + '\' + ProgramName + '\');
 
-   DSS_Registry     := TIniRegSave.Create('\Software\' + ProgramName);
+    DSS_Registry := TIniRegSave.Create('\Software\' + ProgramName);
 
-   AuxParser        := TParser.Create;
-   DefaultEditor    := 'NotePad';
-   DefaultFontSize  := 8;
-   DefaultFontName  := 'MS Sans Serif';
+    AuxParser := TParser.Create;
+    DefaultEditor := 'NotePad';
+    DefaultFontSize := 8;
+    DefaultFontName := 'MS Sans Serif';
 
-   NoFormsAllowed   := FALSE;
+    NoFormsAllowed := FALSE;
 
-   LogQueries       := FALSE;
-   QueryLogFileName := '';
-   UpdateRegistry   := TRUE;
-   QueryPerformanceFrequency(CPU_Freq);
+    LogQueries := FALSE;
+    QueryLogFileName := '';
+    UpdateRegistry := TRUE;
+    QueryPerformanceFrequency(CPU_Freq);
 
 //   YBMatrix.Start_Ymatrix_Critical;   // Initializes the critical segment for the YMatrix class
 
    //WriteDLLDebugFile('DSSGlobals');
 {$IFNDEF FPC}
-  DSS_Viz_installed:= CheckDSSVisualizationTool; // DSS visualization tool (flag of existance)
+    DSS_Viz_installed := CheckDSSVisualizationTool; // DSS visualization tool (flag of existance)
 {$ENDIF}
 
-Finalization
+finalization
 
   // Dosimplemsg('Enter DSSGlobals Unit Finalization.');
 //  YBMatrix.Finish_Ymatrix_Critical;   // Ends the critical segment for the YMatrix class
 
-  Auxparser.Free;
+    Auxparser.Free;
 
-  EventStrings[ActiveActor].Free;
-  SavedFileList[ActiveActor].Free;
-  ErrorStrings[ActiveActor].Free;
+    EventStrings[ActiveActor].Free;
+    SavedFileList[ActiveActor].Free;
+    ErrorStrings[ActiveActor].Free;
 
-  With DSSExecutive Do If RecorderOn Then Recorderon := FALSE;
-  ClearAllCircuits;
-  DSSExecutive.Free;  {Writes to Registry}
-  DSS_Registry.Free;  {Close Registry}
+    with DSSExecutive do
+        if RecorderOn then
+            Recorderon := FALSE;
+    ClearAllCircuits;
+    DSSExecutive.Free;  {Writes to Registry}
+    DSS_Registry.Free;  {Close Registry}
 
 // Free all the Actors
 {  for ActiveActor := 1 to NumOfActors do
@@ -1038,7 +1086,4 @@ Finalization
     End;
   End;
 }
-End.
-
-
-
+end.

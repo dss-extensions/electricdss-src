@@ -12,56 +12,66 @@ unit FrmCSVchannelSelect;
 interface
 
 uses
-  LCLIntf, LCLType, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls;
+    LCLIntf,
+    LCLType,
+    SysUtils,
+    Variants,
+    Classes,
+    Graphics,
+    Controls,
+    Forms,
+    Dialogs,
+    StdCtrls;
 
 type
-  TChannelSelectForm = class(TForm)
-    Button1: TButton;
-    Button2: TButton;
-    Label1: TLabel;
-    Label2: TLabel;
-    ListBox1: TListBox;
-    procedure Button2Click(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
-  private
+    TChannelSelectForm = class(TForm)
+        Button1: TButton;
+        Button2: TButton;
+        Label1: TLabel;
+        Label2: TLabel;
+        ListBox1: TListBox;
+        procedure Button2Click(Sender: TObject);
+        procedure Button1Click(Sender: TObject);
+        procedure FormCreate(Sender: TObject);
+    PRIVATE
     { Private declarations }
-  public
+    PUBLIC
     { Public declarations }
-    ResultString:String;
-  end;
+        ResultString: String;
+    end;
 
 var
-  ChannelSelectForm: TChannelSelectForm;
+    ChannelSelectForm: TChannelSelectForm;
 
 implementation
 
 {$R *.lfm}
 
 procedure TChannelSelectForm.Button1Click(Sender: TObject);
-Var
-   i:Integer;
+var
+    i: Integer;
 begin
-       ResultString := '';
-       for i := 0 to ListBox1.Count - 1 do  Begin
-         if ListBox1.Selected[i]  then  Begin
-           ResultString := ResultString + Format('%d ', [i+1]);
-         End;
-       End;
+    ResultString := '';
+    for i := 0 to ListBox1.Count - 1 do
+    begin
+        if ListBox1.Selected[i] then
+        begin
+            ResultString := ResultString + Format('%d ', [i + 1]);
+        end;
+    end;
 
-       ModalResult := mrOK;
+    ModalResult := mrOK;
 end;
 
 procedure TChannelSelectForm.Button2Click(Sender: TObject);
 begin
-       ResultString := '';
-       ModalResult := mrCancel;
+    ResultString := '';
+    ModalResult := mrCancel;
 end;
 
 procedure TChannelSelectForm.FormCreate(Sender: TObject);
 begin
-     ResultString := '';
+    ResultString := '';
 end;
 
 end.

@@ -1,4 +1,5 @@
 unit OHLineConstants;
+
 {
   ----------------------------------------------------------
   Copyright (c) 2008-2015, Electric Power Research Institute, Inc.
@@ -10,30 +11,32 @@ unit OHLineConstants;
 
 interface
 
-Uses Ucomplex, LineConstants;
+uses
+    Ucomplex,
+    LineConstants;
 
-TYPE
+type
 
-TOHLineConstants = class(TLineConstants)
-  private
+    TOHLineConstants = class(TLineConstants)
+    PRIVATE
 
-  protected
+    PROTECTED
 
-  public
-     Constructor Create(NumConductors:Integer);
-     Destructor Destroy;  Override;
-end;
+    PUBLIC
+        constructor Create(NumConductors: Integer);
+        destructor Destroy; OVERRIDE;
+    end;
 
 implementation
 
-constructor TOHLineConstants.Create( NumConductors: Integer);
+constructor TOHLineConstants.Create(NumConductors: Integer);
 begin
-  inherited Create (NumConductors);
+    inherited Create(NumConductors);
 end;
 
 destructor TOHLineConstants.Destroy;
 begin
-  inherited;
+    inherited;
 end;
 
 initialization
