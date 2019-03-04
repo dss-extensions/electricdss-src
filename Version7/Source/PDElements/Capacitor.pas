@@ -74,7 +74,11 @@ type
     end;
 
     TCapacitorObj = class(TPDElement)
+{$IFDEF DSS_CAPI}
+    PUBLIC
+{$ELSE}
     PRIVATE
+{$ENDIF}
         FC,
         FXL,
         Fkvarrating,

@@ -41,24 +41,25 @@ TYPE
 
           Procedure ResynchElementNameList;
 
-     Protected
+    PROTECTED
         Class_Name: String;
         ActiveElement: Integer;   // index of present ActiveElement
         CommandList: TCommandlist;
         ActiveProperty: Integer;
-         ElementNameList:{$IFDEF DSS_CAPI_HASHLIST}TFPHashList;{$ELSE}THashList;{$ENDIF}
+        ElementNameList: THashList;
 
-         Function AddObjectToList(Obj:Pointer):Integer;  // Used by NewObject
-         Function Get_FirstPropertyName:String;
-         Function Get_NextPropertyName:String;
-         Function MakeLike(Const ObjName:String):Integer; Virtual;
 
-         Procedure CountProperties;  // Add no. of intrinsic properties
-         Procedure AllocatePropertyArrays;
-         Procedure DefineProperties;  // Add Properties of this class to propName
-         Function ClassEdit(Const ActiveObj:Pointer; Const ParamPointer:Integer):Integer;
+        function AddObjectToList(Obj: Pointer): Integer;  // Used by NewObject
+        function Get_FirstPropertyName: String;
+        function Get_NextPropertyName: String;
+        function MakeLike(const ObjName: String): Integer; VIRTUAL;
 
-     public
+        procedure CountProperties;  // Add no. of intrinsic properties
+        procedure AllocatePropertyArrays;
+        procedure DefineProperties;  // Add Properties of this class to propName
+        function ClassEdit(const ActiveObj: Pointer; const ParamPointer: Integer): Integer;
+
+    PUBLIC
         NumProperties: Integer;
         PropertyName,
         PropertyHelp: pStringArray;
@@ -74,32 +75,32 @@ TYPE
         Saved: Boolean;
 
         constructor Create;
-         destructor Destroy; override;
+        destructor Destroy; OVERRIDE;
 
          {Helper routine for building Property strings}
-         Procedure AddProperty(const PropName:String; CmdMapIndex:Integer; const HelpString:String);
-         Procedure ReallocateElementNameList;
+        procedure AddProperty(const PropName: String; CmdMapIndex: Integer; const HelpString: String);
+        procedure ReallocateElementNameList;
+
+        function Edit(ActorID: Integer): Integer; VIRTUAL;      // uses global parser
+        function Init(Handle: Integer; ActorID: Integer): Integer; VIRTUAL;
+        function NewObject(const ObjName: String): Integer; VIRTUAL;
+
+        function SetActive(const ObjName: String): Boolean; VIRTUAL;
+        function GetActiveObj: Pointer; // Get address of active obj of this class
+        function Find(const ObjName: String): Pointer; VIRTUAL;  // Find an obj of this class by name
+
+        function PropertyIndex(const Prop: String): Integer;
+        property FirstPropertyName: String READ Get_FirstPropertyName;
+        property NextPropertyName: String READ Get_NextPropertyName;
+
+        property Active: Integer READ ActiveElement WRITE Set_Active;
+        property ElementCount: Integer READ Get_ElementCount;
+        property First: Integer READ Get_First;
+        property Next: Integer READ Get_Next;
+        property Name: String READ Class_Name;
+    end;
          
-         Function Edit:Integer;Virtual;      // uses global parser
-         Function Init(Handle:Integer):Integer; Virtual;
-         Function NewObject(const ObjName:String):Integer; Virtual;
-
-         Function SetActive(const ObjName:String):Boolean; Virtual;
-         Function GetActiveObj:Pointer; // Get address of active obj of this class
-         Function Find(const ObjName:String):Pointer; Virtual;  // Find an obj of this class by name
-
-         Function PropertyIndex(Const Prop:String):Integer;
-         Property FirstPropertyName:String read Get_FirstPropertyName;
-         Property NextPropertyName:String read Get_NextPropertyName;
-
-         Property Active:Integer read ActiveElement write Set_Active;
-         Property ElementCount:Integer read Get_ElementCount;
-         Property First:Integer read Get_First;
-         Property Next:Integer read Get_Next;
-         Property Name:String read Class_Name;
-   END;
-
-VAR
+var
     DSSClasses: TDSSClasses;
 
 
@@ -184,32 +185,31 @@ BEGIN
         'Should be overridden.', 780);
 END;
 
-Procedure TDSSClass.Set_Active(value:Integer);
-BEGIN
-     If (Value > 0) and (Value<= ElementList.ListSize)
-     THEN
-       Begin
+procedure TDSSClass.Set_Active(value: Integer);
+begin
+    if (Value > 0) and (Value <= ElementList.ListSize) then
+    begin
         ActiveElement := Value;
-        ActiveDSSObject := ElementList.Get(ActiveElement);
+        ActiveDSSObject[ActiveActor] := ElementList.Get(ActiveElement);
          // Make sure Active Ckt Element agrees if is a ckt element
          // So COM interface will work
-        if ActiveDSSObject is TDSSCktElement then
-            ActiveCircuit.ActiveCktElement := TDSSCktElement(ActiveDSSObject);
-       End;
-END;
+        if ActiveDSSObject[ActiveActor] is TDSSCktElement then
+            ActiveCircuit[ActiveActor].ActiveCktElement := TDSSCktElement(ActiveDSSObject[ActiveActor]);
+    end;
+end;
 
-Function TDSSClass.Edit:Integer;
-BEGIN
+function TDSSClass.Edit(ActorID: Integer): Integer;
+begin
     Result := 0;
     DoSimpleMsg('virtual function TDSSClass.Edit called.  Should be overriden.', 781);
-END;
+end;
 
 
-Function TDSSClass.Init(Handle:Integer):Integer;
-BEGIN
+function TDSSClass.Init(Handle: Integer; ActorID: Integer): Integer;
+begin
     Result := 0;
     DoSimpleMsg('virtual function TDSSClass.Init called.  Should be overriden.', 782);
-END;
+end;
 
 Function TDSSClass.AddObjectToList(Obj:Pointer):Integer;
 BEGIN
@@ -241,7 +241,7 @@ BEGIN
     If idx>0 Then
     Begin
         ActiveElement := idx;
-        ActiveDSSObject := ElementList.get(idx);
+        ActiveDSSObject[ActiveActor] := ElementList.get(idx);
         Result := TRUE;
     End;
 
@@ -268,81 +268,86 @@ BEGIN
     End;
 END;
 
-Function TDSSClass.GetActiveObj:Pointer; // Get address of active obj of this class
-BEGIN
+function TDSSClass.GetActiveObj: Pointer; // Get address of active obj of this class
+begin
     ActiveElement := ElementList.ActiveIndex;
-    If ActiveElement>0 THEN
+    if ActiveElement > 0 then
         Result := ElementList.Get(ActiveElement)
-    Else
-       Result := Nil;
-END;
+    else
+        Result := NIL;
+end;
 
-Function TDSSClass.Get_FirstPropertyName:String;
-BEGIN
+function TDSSClass.Get_FirstPropertyName: String;
+begin
     ActiveProperty := 0;
     Result := Get_NextPropertyName;
-END;
+end;
 
-Function TDSSClass.Get_NextPropertyName:String;
-BEGIN
+function TDSSClass.Get_NextPropertyName: String;
+begin
     Inc(ActiveProperty);
-    IF ActiveProperty<=NumProperties THEN
+    if ActiveProperty <= NumProperties then
         Result := PropertyName^[ActiveProperty]
-    ELSE Result := '';
-END;
+    else
+        Result := '';
+end;
 
-Function TDSSClass.PropertyIndex(Const Prop:String):Integer;
+function TDSSClass.PropertyIndex(const Prop: String): Integer;
 // find property value by string
 
-VAR
+var
     i: Integer;
-BEGIN
+begin
 
     Result := 0;  // Default result if not found
-     For i := 1 to NumProperties DO BEGIN
-        IF CompareText(Prop, PropertyName[i])=0 THEN BEGIN
+    for i := 1 to NumProperties do
+    begin
+        if CompareText(Prop, PropertyName[i]) = 0 then
+        begin
             Result := PropertyIdxMap[i];
             Break;
-        END;
-     END;
-END;
+        end;
+    end;
+end;
 
-Procedure TDSSClass.CountProperties;
-Begin
+procedure TDSSClass.CountProperties;
+begin
     NumProperties := NumProperties + 1;
-End;
+end;
 
-Procedure TDSSClass.DefineProperties;
-Begin
+procedure TDSSClass.DefineProperties;
+begin
     ActiveProperty := ActiveProperty + 1;
     PropertyName^[ActiveProperty] := 'like';
     PropertyHelp^[ActiveProperty] := 'Make like another object, e.g.:' + CRLF + CRLF +
         'New Capacitor.C2 like=c1  ...';
-End;
+end;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Function TDSSClass.ClassEdit(Const ActiveObj:Pointer; Const ParamPointer:Integer):Integer;
+function TDSSClass.ClassEdit(const ActiveObj: Pointer; const ParamPointer: Integer): Integer;
 
 
-BEGIN
+begin
   // continue parsing with contents of Parser
 
     Result := 0;
-  If ParamPointer > 0 Then
-  WITH TDSSObject(ActiveObj) DO BEGIN
+    if ParamPointer > 0 then
+        with TDSSObject(ActiveObj) do
+        begin
 
-      CASE ParamPointer OF
-       1: MakeLike(Parser.StrValue);    // Like command (virtual)
-      END;
+            case ParamPointer of
+                1:
+                    MakeLike(Parser[ActiveActor].StrValue);    // Like command (virtual)
+            end;
 
-  End;
-End;
+        end;
+end;
 
-Function  TDSSClass.MakeLike(Const ObjName:String):Integer;
-Begin
+function TDSSClass.MakeLike(const ObjName: String): Integer;
+begin
     Result := 0;
     DoSimpleMsg('virtual function TDSSClass.MakeLike called.  Should be overriden.', 784);
-End;
+end;
 
 function TDSSClass.Get_ElementCount: Integer;
 begin
@@ -351,32 +356,35 @@ end;
 
 function TDSSClass.Get_First: Integer;
 begin
-    IF ElementList.ListSize=0   THEN Result := 0
+    if ElementList.ListSize = 0 then
+        Result := 0
 
-    ELSE Begin
+    else
+    begin
         ActiveElement := 1;
-        ActiveDSSObject := ElementList.First;
+        ActiveDSSObject[ActiveActor] := ElementList.First;
       // Make sure Active Ckt Element agrees if is a ckt element
       // So COM interface will work
-        if ActiveDSSObject is TDSSCktElement then
-            ActiveCircuit.ActiveCktElement := TDSSCktElement(ActiveDSSObject);
+        if ActiveDSSObject[ActiveActor] is TDSSCktElement then
+            ActiveCircuit[ActiveActor].ActiveCktElement := TDSSCktElement(ActiveDSSObject[ActiveActor]);
         Result := ActiveElement;
-    End;
+    end;
 end;
 
 function TDSSClass.Get_Next: Integer;
 begin
     Inc(ActiveElement);
-    IF ActiveElement > ElementList.ListSize
-    THEN Result := 0
-    ELSE Begin
-        ActiveDSSObject := ElementList.Next;
+    if ActiveElement > ElementList.ListSize then
+        Result := 0
+    else
+    begin
+        ActiveDSSObject[ActiveActor] := ElementList.Next;
       // Make sure Active Ckt Element agrees if is a ckt element
       // So COM interface will work
-        if ActiveDSSObject is TDSSCktElement then
-            ActiveCircuit.ActiveCktElement := TDSSCktElement(ActiveDSSObject);
+        if ActiveDSSObject[ActiveActor] is TDSSCktElement then
+            ActiveCircuit[ActiveActor].ActiveCktElement := TDSSCktElement(ActiveDSSObject[ActiveActor]);
         Result := ActiveElement;
-    End;
+    end;
 
 end;
 
@@ -391,7 +399,7 @@ begin
 end;
 
 procedure TDSSClass.AllocatePropertyArrays;
-Var 
+var
     i:Integer;
 begin
     PropertyName := Allocmem(SizeOf(PropertyName^[1]) * NumProperties);
@@ -400,13 +408,16 @@ begin
     RevPropertyIdxMap := Allocmem(SizeOf(RevPropertyIdxMap^[1]) * NumProperties);
     ActiveProperty := 0;    // initialize for AddPropert
      {initialize PropertyIdxMap to take care of legacy items}
-     For i := 1 to NumProperties Do PropertyIDXMap^[i] := i;
-     For i := 1 to NumProperties Do RevPropertyIDXMap^[i] := i;
+    for i := 1 to NumProperties do
+        PropertyIDXMap^[i] := i;
+    for i := 1 to NumProperties do
+        RevPropertyIDXMap^[i] := i;
 end;
 
 procedure TDSSClass.ReallocateElementNameList;
-Var
+var
     i: Integer;
+
 begin
   {Reallocate the device name list to improve the performance of searches}
     ElementNameList.Free; // Throw away the old one.
@@ -425,8 +436,10 @@ end;
 
 procedure TDSSClass.ResynchElementNameList;
 begin
+
     ReallocateElementNameList;
-    ElementNamesOutOfSynch := False;
+    ElementNamesOutOfSynch := FALSE;
+
 end;
 
 end.
