@@ -282,10 +282,11 @@ var
     msg: String;
 begin
 {$IFDEF DSS_CAPI}
-    if not DSS_CAPI_ALLOW_EDITOR then Exit; // just ignore if Show is not allowed
+    if not DSS_CAPI_ALLOW_EDITOR then
+        Exit; // just ignore if Show is not allowed
 {$ENDIF}
 
-    gotError := False;
+    gotError := FALSE;
     msg := 'Unknown error in process.';
     try
         if FileExists(FileNm) then
@@ -299,7 +300,7 @@ begin
     except
         On E: Exception do
         begin
-            gotError := True;
+            gotError := TRUE;
             msg := E.Message;
         end;
     end;
@@ -313,7 +314,7 @@ var //Handle:Word;
     gotError: Boolean;
     msg: String;
 begin
-    gotError := False;
+    gotError := FALSE;
     msg := 'Unknown error in command.';
     try
 {$IF (defined(Windows) or defined(MSWindows))}
@@ -324,7 +325,7 @@ begin
     except
         On E: Exception do
         begin
-            gotError := True;
+            gotError := TRUE;
             msg := E.Message;
         end;
     end;

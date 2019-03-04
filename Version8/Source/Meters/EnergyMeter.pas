@@ -2736,9 +2736,10 @@ begin
     begin
         PD_Elem := SequenceList.Get(idx);
         PD_Elem.CalcCustInterrupts;
-        
-        if PD_Elem.BranchSectionID <= 0 then continue;
-        
+
+        if PD_Elem.BranchSectionID <= 0 then
+            continue;
+
         // Populate the Section properties
         pSection := @FeederSections^[PD_Elem.BranchSectionID];
         Inc(pSection.NCustomers, PD_Elem.BranchNumCustomers); // Sum up num Customers on this Section

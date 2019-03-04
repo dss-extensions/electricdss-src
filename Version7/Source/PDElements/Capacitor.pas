@@ -137,7 +137,6 @@ type
 
 var
     ActiveCapacitorObj: TCapacitorObj;
-    CapacitorClass: TCapacitor;
 
 implementation
 
@@ -165,7 +164,6 @@ begin
 
     CommandList := TCommandList.Create(Slice(PropertyName^, NumProperties));
     CommandList.Abbrev := TRUE;
-    CapacitorClass := Self;
 end;
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
