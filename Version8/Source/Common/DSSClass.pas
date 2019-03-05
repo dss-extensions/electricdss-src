@@ -46,7 +46,7 @@ TYPE
         ActiveElement: Integer;   // index of present ActiveElement
         CommandList: TCommandlist;
         ActiveProperty: Integer;
-        ElementNameList: THashList;
+        ElementNameList:{$IFDEF DSS_CAPI_HASHLIST}TFPHashList;{$ELSE}THashList;{$ENDIF}
 
 
         function AddObjectToList(Obj: Pointer): Integer;  // Used by NewObject
